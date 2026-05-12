@@ -97,7 +97,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     }
 
     const active=players.filter(p=>p.active);
-    if(active.length<4) return;
+    if(active.length < 4) return;
 
     let used=new Set();
     let teams=[];
@@ -117,22 +117,23 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let rest=active.filter(p=>!used.has(p.name));
     shuffle(rest);
 
-    for(let i=0;i<rest.length-1;i+=2){
+    for(let i=0;i+1<rest.length;i+=2){
       teams.push([rest[i],rest[i+1]]);
     }
 
-    const possibleMatches=Math.floor(teams.length/2);
-    if(possibleMatches===0) return;
+    // 👉 여기서 핵심
+    const possibleMatches = Math.floor(teams.length / 2);
+    if(possibleMatches < 1) return;
 
     shuffle(teams);
 
-    const maxCourts=Math.min(3, possibleMatches);
+    const maxCourts = Math.min(3, possibleMatches);
     let matches=[];
 
     for(let i=0;i<maxCourts;i++){
       matches.push({
-        team1:teams[i*2],
-        team2:teams[i*2+1],
+        team1: teams[i*2],
+        team2: teams[i*2+1],
         s1:0,
         s2:0
       });
@@ -160,7 +161,6 @@ function renderResult(){
     wrap.className="result-set";
 
     const header=document.createElement("div");
-
     const title=document.createElement("span");
     title.textContent=`${i}SET `;
 
@@ -182,7 +182,6 @@ function renderResult(){
 
       const s1=document.createElement("select");
       const s2=document.createElement("select");
-
       for(let k=0;k<=6;k++){
         s1.appendChild(new Option(k,k));
         s2.appendChild(new Option(k,k));
@@ -190,7 +189,6 @@ function renderResult(){
 
       s1.value=m.s1;
       s2.value=m.s2;
-
       s1.onchange=()=>m.s1=+s1.value;
       s2.onchange=()=>m.s2=+s2.value;
 
@@ -213,8 +211,8 @@ function renderResult(){
     const wait=active.filter(p=>!played.has(p.name));
     const w=document.createElement("div");
     w.textContent="대기 : "+wait.map(p=>p.name).join(" ");
-
     wrap.appendChild(w);
+
     resultEl.appendChild(wrap);
   }
 }
