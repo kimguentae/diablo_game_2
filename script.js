@@ -16,7 +16,6 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* ========================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -26,7 +25,7 @@ const p2 = document.getElementById("p2");
 const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
-/* ========================= PLAYER ========================= */
+/* PLAYER */
 function renderPlayers(){
   listEl.innerHTML="";
 
@@ -52,12 +51,12 @@ function renderPlayers(){
   countEl.textContent=players.filter(p=>p.active).length;
 }
 
-/* ========================= SELECT ========================= */
+/* SELECT (🔵 원복 핵심) */
 function renderSelect(){
   const active=players.filter(p=>p.active);
 
-  p1.innerHTML='<option value="">P1</option>';
-  p2.innerHTML='<option value="">P2</option>';
+  p1.innerHTML='<option value="">PLAYER1</option>';
+  p2.innerHTML='<option value="">PLAYER2</option>';
 
   active.forEach(p=>{
     p1.appendChild(new Option(p.name,p.name));
@@ -65,42 +64,35 @@ function renderSelect(){
   });
 }
 
-/* ========================= FIXED PAIR (원래대로 복구) ========================= */
+/* FIXED PAIR (원래 유지) */
 addPair.onclick=()=>{
   const a=p1.value;
   const b=p2.value;
 
   if(!a||!b||a===b) return;
-
-  // 원래 방식 (한명이라도 중복이면 막기)
   if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
 
   pairs.push([a,b]);
-
   p1.value="";
   p2.value="";
-
   renderAll();
 };
 
 function renderPairs(){
   pairList.innerHTML="";
-
   pairs.forEach((p,i)=>{
     const d=document.createElement("div");
     d.className="pairItem";
     d.textContent=`PAIR ${i+1}: ${p[0]} ${p[1]}`;
-
     d.onclick=()=>{
       pairs=pairs.filter(x=>x!==p);
       renderAll();
     };
-
     pairList.appendChild(d);
   });
 }
 
-/* ========================= GAME ========================= */
+/* GAME */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
@@ -115,7 +107,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     pairs.forEach(p=>{
       const a=active.find(x=>x.name===p[0]);
       const b=active.find(x=>x.name===p[1]);
-
       if(a&&b){
         teams.push([a,b]);
         used.add(a.name);
@@ -151,7 +142,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* ========================= RESULT ========================= */
+/* RESULT */
 function renderResult(){
   resultEl.innerHTML="";
   const activePlayers=players.filter(p=>p.active);
@@ -186,8 +177,6 @@ function renderResult(){
       s2.onchange=()=>m.s2=Number(s2.value);
 
       line.appendChild(text);
-
-      // 🔥 요청사항: 괄호 제거 + inline
       line.appendChild(document.createTextNode(" "));
       line.appendChild(s1);
       line.appendChild(document.createTextNode(" : "));
@@ -211,7 +200,7 @@ function renderResult(){
   }
 }
 
-/* ========================= UTIL ========================= */
+/* UTIL */
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -219,7 +208,7 @@ function shuffle(a){
   }
 }
 
-/* ========================= INIT ========================= */
+/* INIT */
 function renderAll(){
   renderPlayers();
   renderSelect();
