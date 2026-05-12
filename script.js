@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     listEl.innerHTML = "";
 
-    // 🔥 active 먼저 위로
     let sorted = [
       ...players.filter(p=>p.active),
       ...players.filter(p=>!p.active)
@@ -63,26 +62,26 @@ document.addEventListener("DOMContentLoaded", () => {
     p1.innerHTML = "";
     p2.innerHTML = "";
 
-    const opt1 = document.createElement("option");
-    opt1.value = "";
-    opt1.textContent = "PLAYER 1";
+    const o1 = document.createElement("option");
+    o1.value = "";
+    o1.textContent = "PLAYER 1";
 
-    const opt2 = document.createElement("option");
-    opt2.value = "";
-    opt2.textContent = "PLAYER 2";
+    const o2 = document.createElement("option");
+    o2.value = "";
+    o2.textContent = "PLAYER 2";
 
-    p1.appendChild(opt1);
-    p2.appendChild(opt2);
+    p1.appendChild(o1);
+    p2.appendChild(o2);
 
     available.forEach(p=>{
-      const o1 = document.createElement("option");
-      const o2 = document.createElement("option");
+      const a = document.createElement("option");
+      const b = document.createElement("option");
 
-      o1.value = o2.value = p.name;
-      o1.textContent = o2.textContent = p.name;
+      a.value = b.value = p.name;
+      a.textContent = b.textContent = p.name;
 
-      p1.appendChild(o1);
-      p2.appendChild(o2);
+      p1.appendChild(a);
+      p2.appendChild(b);
     });
 
     syncSelect();
@@ -105,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const a = p1.value;
     const b = p2.value;
 
-    if(!a || !b || a === b) return;
+    if(!a || !b || a===b) return;
 
     const pa = players.find(x=>x.name===a);
     const pb = players.find(x=>x.name===b);
@@ -122,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
      PAIR 출력
   ========================= */
   function renderPairs(){
+
     pairList.innerHTML = "";
 
     pairs.forEach((p,i)=>{
@@ -144,9 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* =========================
-     전체 렌더
-  ========================= */
   function renderAll(){
     renderPlayers();
     renderSelect();
