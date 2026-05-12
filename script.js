@@ -9,37 +9,46 @@ const names = [
 ];
 
 const players = names.map(n => ({
-  name:n,
-  active:false
+  name: n,
+  active: false
 }));
 
 let pairs = [];
-const setStore = {1:null,2:null,3:null,4:null,5:null};
 
+/* 🔥 SET 데이터 저장 */
+const matchStore = {
+  1: null,
+  2: null,
+  3: null,
+  4: null,
+  5: null
+};
+
+/* ================= DOM ================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
-const resultEl = document.getElementById("result");
+const gameEl = document.getElementById("result"); // 🔥 GAME 영역
 
 const p1 = document.getElementById("p1");
 const p2 = document.getElementById("p2");
 const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
-/* PLAYER */
+/* ================= PLAYER ================= */
 function renderPlayers(){
   listEl.innerHTML = "";
 
   const sorted = [
-    ...players.filter(p=>p.active),
-    ...players.filter(p=>!p.active)
+    ...players.filter(p => p.active),
+    ...players.filter(p => !p.active)
   ];
 
-  sorted.forEach(p=>{
+  sorted.forEach(p => {
     const div = document.createElement("div");
     div.className = "player" + (p.active ? " active" : "");
     div.textContent = p.name;
 
-    div.onclick = ()=>{
+    div.onclick = () => {
       p.active = !p.active;
       renderAll();
     };
@@ -51,45 +60,45 @@ function renderPlayers(){
   guest.className = "player guest";
   guest.textContent = "+";
 
-  guest.onclick = ()=>{
+  guest.onclick = () => {
     const name = prompt("GUEST NAME");
-    if(!name) return;
+    if (!name) return;
 
-    players.push({name, active:true});
+    players.push({ name, active: true });
     renderAll();
   };
 
   listEl.appendChild(guest);
 
-  countEl.textContent = players.filter(p=>p.active).length;
+  countEl.textContent = players.filter(p => p.active).length;
 }
 
-/* SELECT */
+/* ================= SELECT ================= */
 function renderSelect(){
-  const active = players.filter(p=>p.active);
+  const active = players.filter(p => p.active);
 
   p1.innerHTML = "";
   p2.innerHTML = "";
 
-  p1.appendChild(new Option("PLAYER1",""));
-  p2.appendChild(new Option("PLAYER2",""));
+  p1.appendChild(new Option("PLAYER1", ""));
+  p2.appendChild(new Option("PLAYER2", ""));
 
-  active.forEach(p=>{
-    p1.appendChild(new Option(p.name,p.name));
-    p2.appendChild(new Option(p.name,p.name));
+  active.forEach(p => {
+    p1.appendChild(new Option(p.name, p.name));
+    p2.appendChild(new Option(p.name, p.name));
   });
 }
 
-/* FIXED PAIR */
-addPair.onclick = ()=>{
+/* ================= FIXED PAIR ================= */
+addPair.onclick = () => {
   const a = p1.value;
   const b = p2.value;
 
-  if(!a || !b || a === b) return;
+  if (!a || !b || a === b) return;
 
-  if(pairs.some(x => x.includes(a) || x.includes(b))) return;
+  if (pairs.some(x => x.includes(a) || x.includes(b))) return;
 
-  pairs.push([a,b]);
+  pairs.push([a, b]);
 
   p1.value = "";
   p2.value = "";
@@ -100,13 +109,13 @@ addPair.onclick = ()=>{
 function renderPairs(){
   pairList.innerHTML = "";
 
-  pairs.forEach((p,i)=>{
+  pairs.forEach((p, i) => {
     const div = document.createElement("div");
     div.className = "pairItem";
     div.textContent = `PAIR ${i+1} : ${p[0]} ${p[1]}`;
 
-    div.onclick = ()=>{
-      pairs = pairs.filter(x=>x!==p);
+    div.onclick = () => {
+      pairs = pairs.filter(x => x !== p);
       renderAll();
     };
 
@@ -114,13 +123,14 @@ function renderPairs(){
   });
 }
 
-/* GAME */
-document.querySelectorAll(".genBtn").forEach(btn=>{
-  btn.onclick = ()=>{
+/* ================= SET GENERATE ================= */
+document.querySelectorAll(".genBtn").forEach(btn => {
+  btn.onclick = () => {
 
-    const active = players.filter(p=>p.active);
+    const setNo = btn.dataset.set;
+    const active = players.filter(p => p.active);
 
-    if(active.length < 4){
+    if (active.length < 4) {
       alert("인원 부족");
       return;
     }
@@ -128,96 +138,98 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used = new Set();
     let teams = [];
 
-    pairs.forEach(p=>{
-      const a = active.find(x=>x.name===p[0]);
-      const b = active.find(x=>x.name===p[1]);
+    pairs.forEach(p => {
+      const a = active.find(x => x.name === p[0]);
+      const b = active.find(x => x.name === p[1]);
 
-      if(a && b){
-        teams.push([a,b]);
+      if (a && b) {
+        teams.push([a, b]);
         used.add(a.name);
         used.add(b.name);
       }
     });
 
-    let rest = active.filter(p=>!used.has(p.name));
+    let rest = active.filter(p => !used.has(p.name));
     shuffle(rest);
 
     let solo = [];
-    for(let i=0;i<rest.length;i+=2){
-      if(rest[i+1]){
-        solo.push([rest[i],rest[i+1]]);
+    for (let i = 0; i < rest.length; i += 2) {
+      if (rest[i + 1]) {
+        solo.push([rest[i], rest[i + 1]]);
       }
     }
 
-    let allTeams = [...teams,...solo];
+    let allTeams = [...teams, ...solo];
     shuffle(allTeams);
 
     let matches = [];
 
-    for(let i=0;i<COURTS.length;i++){
-      if(allTeams[i*2] && allTeams[i*2+1]){
+    for (let i = 0; i < COURTS.length; i++) {
+      if (allTeams[i * 2] && allTeams[i * 2 + 1]) {
         matches.push([
-          allTeams[i*2][0],
-          allTeams[i*2][1],
-          allTeams[i*2+1][0],
-          allTeams[i*2+1][1]
+          allTeams[i * 2][0],
+          allTeams[i * 2][1],
+          allTeams[i * 2 + 1][0],
+          allTeams[i * 2 + 1][1]
         ]);
       }
     }
 
-    setStore[btn.dataset.set] = matches;
-    renderResult();
+    matchStore[setNo] = matches;
+    renderGame();
   };
 });
 
-/* RESULT */
-function renderResult(){
+/* ================= GAME (RESULT AREA) ================= */
+function renderGame(){
 
-  resultEl.innerHTML = "";
+  gameEl.innerHTML = "";
 
-  const activePlayers = players.filter(p=>p.active);
+  const activePlayers = players.filter(p => p.active);
 
-  for(let i=1;i<=5;i++){
-    const data = setStore[i];
-    if(!data) continue;
+  for (let i = 1; i <= 5; i++) {
+
+    const data = matchStore[i];
+    if (!data) continue;
 
     const div = document.createElement("div");
     div.className = "result-set";
 
-    let played = new Set();
     let html = `(${i}SET)<br>`;
+    let played = new Set();
 
-    data.forEach((t,idx)=>{
+    data.forEach((t, idx) => {
+
       const court = COURTS[idx] || "C";
 
       html += `${court}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
 
-      t.forEach(p=>played.add(p.name));
+      t.forEach(p => played.add(p.name));
     });
 
     const waiting = activePlayers.filter(p => !played.has(p.name));
 
-    html += `<br>대기 : ${waiting.map(p=>p.name).join(" ")}`;
+    html += `<br>대기 : ${waiting.map(p => p.name).join(" ") || "없음"}`;
 
     div.innerHTML = html;
-    resultEl.appendChild(div);
+    gameEl.appendChild(div);
   }
 }
 
-/* UTIL */
+/* ================= UTIL ================= */
 function shuffle(arr){
-  for(let i=arr.length-1;i>0;i--){
-    let j=Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
+  for (let i = arr.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
 }
 
-/* INIT */
+/* ================= INIT ================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
   renderPairs();
-  renderResult();
+  renderGame();
 }
 
 renderAll();
