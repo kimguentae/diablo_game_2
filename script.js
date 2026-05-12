@@ -1,6 +1,6 @@
-const COURTS = ["A","B","C"];
+const COURTS=["A","B","C"];
 
-const names = [
+const names=[
   "김재용","염성민","김근태","장준원","손가람","이정현",
   "박종성","김준현","송지훈","박정규","김동현","유세호",
   "하지훈","김남진","이우진","이해동","박종혁","최준희",
@@ -8,7 +8,7 @@ const names = [
   "이명진","전유준","성제현","장이현"
 ];
 
-const players = names.map(n=>({name:n,active:false}));
+const players=names.map(n=>({name:n,active:false}));
 
 let pairs=[];
 const setStore={1:null,2:null,3:null,4:null,5:null};
@@ -22,10 +22,9 @@ const p2=document.getElementById("p2");
 const addPair=document.getElementById("addPair");
 const pairList=document.getElementById("pairList");
 
-/* ================= PLAYER ================= */
+/* PLAYER */
 function renderPlayers(){
   listEl.innerHTML="";
-
   [...players.filter(p=>p.active),...players.filter(p=>!p.active)]
   .forEach(p=>{
     const d=document.createElement("div");
@@ -48,12 +47,12 @@ function renderPlayers(){
   countEl.textContent=players.filter(p=>p.active).length;
 }
 
-/* ================= SELECT ================= */
+/* SELECT */
 function renderSelect(){
   const active=players.filter(p=>p.active);
 
-  p1.innerHTML='<option value="">PLAYER1</option>';
-  p2.innerHTML='<option value="">PLAYER2</option>';
+  p1.innerHTML='<option>PLAYER1</option>';
+  p2.innerHTML='<option>PLAYER2</option>';
 
   active.forEach(p=>{
     p1.appendChild(new Option(p.name,p.name));
@@ -61,7 +60,7 @@ function renderSelect(){
   });
 }
 
-/* ================= FIXED PAIR ================= */
+/* FIXED PAIR */
 addPair.onclick=()=>{
   const a=p1.value,b=p2.value;
   if(!a||!b||a===b) return;
@@ -86,20 +85,19 @@ function renderPairs(){
   });
 }
 
-/* ================= GAME ================= */
+/* SET GENERATE */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
     const setNo=btn.dataset.set;
 
-    // 🔥 LOCK 체크
     if(setStore[setNo]?.locked){
       alert("LOCK 상태입니다");
       return;
     }
 
     const active=players.filter(p=>p.active);
-    if(active.length<4) return alert("인원 부족");
+    if(active.length<4) return;
 
     let used=new Set();
     let teams=[];
@@ -107,7 +105,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     pairs.forEach(p=>{
       const a=active.find(x=>x.name===p[0]);
       const b=active.find(x=>x.name===p[1]);
-
       if(a&&b){
         teams.push([a,b]);
         used.add(a.name);
@@ -134,19 +131,16 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       });
     }
 
-    setStore[setNo]={
-      locked:false,
-      matches
-    };
+    setStore[setNo]={locked:false,matches};
 
     renderResult();
   };
 });
 
-/* ================= RESULT ================= */
+/* GAME */
 function renderResult(){
   resultEl.innerHTML="";
-  const activePlayers=players.filter(p=>p.active);
+  const active=players.filter(p=>p.active);
 
   for(let i=1;i<=5;i++){
     const set=setStore[i];
@@ -162,10 +156,7 @@ function renderResult(){
 
     const lock=document.createElement("button");
     lock.className="lockBtn";
-
-    // 🔥 아이콘 변경
     lock.textContent=set.locked?"🔒":"🔓";
-
     lock.onclick=()=>toggleLock(i);
 
     header.appendChild(title);
@@ -177,7 +168,7 @@ function renderResult(){
       const line=document.createElement("div");
 
       const text=document.createTextNode(
-        `${COURTS[idx]}코트 ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name} `
+        `${COURTS[idx]}코트 : ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name}`
       );
 
       const s1=document.createElement("select");
@@ -194,10 +185,15 @@ function renderResult(){
       s1.onchange=()=>m.s1=+s1.value;
       s2.onchange=()=>m.s2=+s2.value;
 
+      const scoreWrap=document.createElement("span");
+      scoreWrap.className="scoreWrap";
+
+      scoreWrap.appendChild(s1);
+      scoreWrap.appendChild(document.createTextNode(" : "));
+      scoreWrap.appendChild(s2);
+
       line.appendChild(text);
-      line.appendChild(s1);
-      line.appendChild(document.createTextNode(" : "));
-      line.appendChild(s2);
+      line.appendChild(scoreWrap);
 
       wrap.appendChild(line);
     });
@@ -207,7 +203,7 @@ function renderResult(){
       [...m.team1,...m.team2].forEach(p=>played.add(p.name));
     });
 
-    const wait=activePlayers.filter(p=>!played.has(p.name));
+    const wait=active.filter(p=>!played.has(p.name));
 
     const w=document.createElement("div");
     w.textContent="대기 : "+wait.map(p=>p.name).join(" ");
@@ -217,13 +213,13 @@ function renderResult(){
   }
 }
 
-/* ================= LOCK ================= */
+/* LOCK */
 function toggleLock(i){
   setStore[i].locked=!setStore[i].locked;
   renderResult();
 }
 
-/* ================= UTIL ================= */
+/* UTIL */
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -231,7 +227,7 @@ function shuffle(a){
   }
 }
 
-/* ================= INIT ================= */
+/* INIT */
 function renderAll(){
   renderPlayers();
   renderSelect();
