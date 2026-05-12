@@ -1,96 +1,90 @@
-body{
-  margin:0;
-  padding:10px;
-  background:#000;
-  color:#fff;
-  font-family:sans-serif;
+body {
+  margin: 0;
+  padding: 10px;
+  background: #000;
+  color: #fff;
+  font-family: sans-serif;
 }
 
-h1{
-  text-align:center;
-  font-size:16px;
-  margin-bottom:10px;
+h1 {
+  text-align: center;
+  font-size: 18px;
 }
 
-h2{
-  font-size:12px;
-  color:#aaa;
+h2 {
+  font-size: 12px;
+  color: #aaa;
 }
 
-/* PLAYER 5열 */
-#playerList{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:5px;
+/* =========================
+   5열 PLAYER
+========================= */
+#playerList {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
 }
 
-.player{
-  background:#1c1c1c;
-  border-radius:6px;
-  font-size:11px;
-  text-align:center;
-  padding:10px 2px;
-  border:1px solid #222;
-  user-select:none;
-  transition:0.15s;
+/* =========================
+   PLAYER 카드 + 눌림 효과
+========================= */
+.player {
+  background: #1c1c1c;
+  border-radius: 6px;
+  font-size: 10px;
+  text-align: center;
+  padding: 8px 2px;
+  border: 1px solid #222;
+
+  user-select: none;
+
+  /* 🔥 핵심: 눌림 애니메이션 */
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.player.active{
-  background:#00c853;
-  color:#000;
-  transform:scale(0.98);
+.player:active {
+  transform: scale(0.92);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
 }
 
-/* FIXED PAIR */
-.pairBox{
-  display:flex;
-  gap:5px;
-  margin-bottom:10px;
+/* 선택 상태 */
+.player.active {
+  background: #00c853;
+  color: #000;
 }
 
-select{
-  flex:1;
-  font-size:13px;
-  background:#111;
-  color:#fff;
-  border:1px solid #333;
-  border-radius:6px;
-  padding:8px;
+/* 게스트 */
+.player.guest {
+  border: 1px dashed #555;
+  color: #888;
 }
 
-.plusBtn{
-  width:42px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:18px;
-  background:#1c1c1c;
-  border:1px dashed #555;
-  border-radius:6px;
+/* =========================
+   GAME 버튼
+========================= */
+.btnRow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
 }
 
-/* PAIR */
-.pair{
-  background:#ffab00;
-  color:#000;
-  font-size:11px;
-  padding:6px;
-  border-radius:6px;
-  margin-top:5px;
+.genBtn {
+  font-size: 10px;
+  padding: 10px 0;
+  border: none;
+  border-radius: 6px;
+  background: #2979ff;
+  color: white;
 }
 
-/* GAME */
-.btnRow{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:5px;
-}
-
-.genBtn{
-  font-size:11px;
-  padding:10px 0;
-  border:none;
-  border-radius:6px;
-  background:#2979ff;
-  color:#fff;
+/* =========================
+   RESULT
+========================= */
+.result-set {
+  margin-top: 8px;
+  padding: 8px;
+  background: #111;
+  border-radius: 6px;
+  font-size: 11px;
 }
