@@ -16,7 +16,7 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* ================= DOM ================= */
+/* ================= DOM (기존 그대로 사용) ================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -30,8 +30,7 @@ const pairList = document.getElementById("pairList");
 function renderPlayers(){
   listEl.innerHTML = "";
 
-  [...players.filter(p=>p.active), ...players.filter(p=>!p.active)]
-  .forEach(p=>{
+  players.forEach(p=>{
     const div = document.createElement("div");
     div.className = "player" + (p.active ? " active" : "");
     div.textContent = p.name;
@@ -108,7 +107,7 @@ function renderPairs(){
   });
 }
 
-/* ================= GAME GENERATION ================= */
+/* ================= GAME (핵심만 유지) ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = () => {
 
@@ -120,7 +119,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used = new Set();
     let teams = [];
 
-    /* 고정 페어 */
     pairs.forEach(p=>{
       const a = active.find(x=>x.name===p[0]);
       const b = active.find(x=>x.name===p[1]);
@@ -132,7 +130,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
-    /* 나머지 자동 페어 */
     let rest = active.filter(p => !used.has(p.name));
     shuffle(rest);
 
@@ -144,16 +141,15 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     shuffle(teams);
 
-    /* ================= 핵심 =================
-       🔥 무조건 3코트까지만 */
+    /* 🔥 핵심 유지: 3코트 고정 */
     let matches = [];
 
     const maxMatches = Math.min(3, Math.floor(teams.length / 2));
 
-    for (let i = 0; i < maxMatches; i++) {
+    for (let i=0;i<maxMatches;i++) {
 
-      const t1 = teams[i * 2];
-      const t2 = teams[i * 2 + 1];
+      const t1 = teams[i*2];
+      const t2 = teams[i*2+1];
 
       if (!t1 || !t2) continue;
 
@@ -165,10 +161,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       });
     }
 
-    setStore[setNo] = {
-      locked:false,
-      matches
-    };
+    setStore[setNo] = matches;
 
     renderResult();
   };
@@ -188,43 +181,16 @@ function renderResult(){
     const wrap = document.createElement("div");
     wrap.className = "result-set";
 
-    const title = document.createElement("div");
-    title.textContent = `${i}SET`;
-    wrap.appendChild(title);
-
     let played = new Set();
 
-    set.matches.forEach((m,idx)=>{
+    set.forEach((m,idx)=>{
 
       const line = document.createElement("div");
 
       const court = COURTS[idx] || `코트${idx+1}`;
 
-      const text = document.createTextNode(
-        `${court}코트 : ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name}`
-      );
-
-      const s1 = document.createElement("select");
-      const s2 = document.createElement("select");
-
-      for (let k=0;k<=6;k++) {
-        s1.appendChild(new Option(k,k));
-        s2.appendChild(new Option(k,k));
-      }
-
-      s1.value = m.s1;
-      s2.value = m.s2;
-
-      s1.onchange = () => m.s1 = +s1.value;
-      s2.onchange = () => m.s2 = +s2.value;
-
-      const score = document.createElement("span");
-      score.appendChild(s1);
-      score.appendChild(document.createTextNode(" : "));
-      score.appendChild(s2);
-
-      line.appendChild(text);
-      line.appendChild(score);
+      line.textContent =
+        `${court}코트 : ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name}`;
 
       wrap.appendChild(line);
 
@@ -240,89 +206,6 @@ function renderResult(){
     wrap.appendChild(w);
     resultEl.appendChild(wrap);
   }
-
-  renderAnalysis();
-}
-
-/* ================= ANALYSIS ================= */
-function renderAnalysis(){
-
-  let stats = {};
-
-  players.filter(p=>p.active).forEach(p=>{
-    stats[p.name] = {game:0,win:0,lose:0};
-  });
-
-  for (let i=1;i<=5;i++) {
-    const set = setStore[i];
-    if (!set) continue;
-
-    set.matches.forEach(m=>{
-
-      const s1 = m.s1;
-      const s2 = m.s2;
-
-      const t1 = m.team1.map(p=>p.name);
-      const t2 = m.team2.map(p=>p.name);
-
-      const all = [...t1,...t2];
-
-      if (s1===0 && s2===0) return;
-
-      all.forEach(n => stats[n].game++);
-
-      if (s1 > s2) {
-        t1.forEach(n => stats[n].win++);
-        t2.forEach(n => stats[n].lose++);
-      } else if (s2 > s1) {
-        t2.forEach(n => stats[n].win++);
-        t1.forEach(n => stats[n].lose++);
-      }
-    });
-  }
-
-  let arr = Object.keys(stats).map(name=>{
-    const s = stats[name];
-    return {
-      name,
-      game: s.game,
-      win: s.win,
-      lose: s.lose,
-      diff: s.win - s.lose
-    };
-  });
-
-  arr.sort((a,b)=>{
-    if (b.game !== a.game) return b.game - a.game;
-    return b.win - a.win;
-  });
-
-  let html = "";
-
-  arr.forEach(s=>{
-    if (s.game === 0) return;
-
-    const diff = s.diff > 0 ? `+${s.diff}` : `${s.diff}`;
-
-    html += `${s.name} : ${s.game}게임 (${s.win}승 ${s.lose}패) / ${diff}<br>`;
-  });
-
-  let box = document.getElementById("analysisBox");
-
-  if (!box) {
-    const btn = document.createElement("button");
-    btn.textContent = "경기분석";
-
-    box = document.createElement("div");
-    box.id = "analysisBox";
-
-    resultEl.parentNode.appendChild(btn);
-    resultEl.parentNode.appendChild(box);
-
-    btn.onclick = () => box.style.display = "block";
-  }
-
-  box.innerHTML = html;
 }
 
 /* ================= UTIL ================= */
