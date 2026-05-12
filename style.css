@@ -6,9 +6,17 @@ body {
   font-family:sans-serif;
 }
 
-h1 { text-align:center; font-size:18px; }
-h2 { font-size:12px; color:#aaa; }
+h1 {
+  text-align:center;
+  font-size:18px;
+}
 
+h2 {
+  font-size:12px;
+  color:#aaa;
+}
+
+/* ================= PLAYER ================= */
 #playerList {
   display:grid;
   grid-template-columns:repeat(5,1fr);
@@ -22,6 +30,7 @@ h2 { font-size:12px; color:#aaa; }
   text-align:center;
   padding:8px 2px;
   border:1px solid #222;
+  user-select:none;
 }
 
 .player.active {
@@ -34,10 +43,12 @@ h2 { font-size:12px; color:#aaa; }
   color:#aaa;
 }
 
+/* ================= FIXED PAIR ================= */
 .pairBox {
   display:grid;
   grid-template-columns:1fr 1fr 0.4fr;
   gap:4px;
+  margin-bottom:8px;
 }
 
 .pairBox select {
@@ -51,13 +62,17 @@ h2 { font-size:12px; color:#aaa; }
 }
 
 #addPair {
+  height:34px;
   display:flex;
   align-items:center;
   justify-content:center;
   border:1px dashed #555;
+  border-radius:6px;
+  background:#1c1c1c;
+  cursor:pointer;
 }
 
-/* 🟠 유지 */
+/* 🟠 고정페어 강조 유지 */
 .pairItem {
   background:#ffb300;
   color:#000;
@@ -67,6 +82,7 @@ h2 { font-size:12px; color:#aaa; }
   margin-top:5px;
 }
 
+/* ================= GAME BUTTON ================= */
 .btnRow {
   display:grid;
   grid-template-columns:repeat(5,1fr);
@@ -82,6 +98,7 @@ h2 { font-size:12px; color:#aaa; }
   color:#fff;
 }
 
+/* ================= RESULT ================= */
 .result-set {
   margin-top:10px;
   padding:8px;
@@ -90,11 +107,24 @@ h2 { font-size:12px; color:#aaa; }
   font-size:11px;
 }
 
+/* 🔒 LOCK 버튼 */
 .lockBtn {
   font-size:10px;
   margin-left:6px;
-  background:#00c853;
+  padding:2px 6px;
   border:none;
   border-radius:4px;
+  background:#00c853;
   color:#000;
+  cursor:pointer;
+}
+
+/* ================= SCORE SELECT ================= */
+.result-set select {
+  background:#000;
+  color:#fff;
+  border:1px solid #333;
+  border-radius:4px;
+  font-size:10px;
+  margin:0 2px;
 }
