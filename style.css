@@ -34,7 +34,6 @@ h2 { font-size:12px; color:#aaa; }
   color:#aaa;
 }
 
-/* FIXED PAIR */
 .pairBox {
   display:grid;
   grid-template-columns:1fr 1fr 0.4fr;
@@ -52,13 +51,13 @@ h2 { font-size:12px; color:#aaa; }
 }
 
 #addPair {
-  height:34px;
   display:flex;
   align-items:center;
   justify-content:center;
+  border:1px dashed #555;
 }
 
-/* 🟠 복구된 핵심 */
+/* 🟠 유지 */
 .pairItem {
   background:#ffb300;
   color:#000;
@@ -93,10 +92,9 @@ h2 { font-size:12px; color:#aaa; }
 
 .lockBtn {
   font-size:10px;
-  padding:2px 6px;
-  margin-left:5px;
+  margin-left:6px;
+  background:#00c853;
   border:none;
   border-radius:4px;
-  background:#00c853;
   color:#000;
 }
