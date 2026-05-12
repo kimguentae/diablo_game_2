@@ -16,7 +16,7 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* ========================= */
+/* ========================= DOM ========================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -115,12 +115,32 @@ function renderPairs(){
   });
 }
 
-/* ========================= GAME ========================= */
+/* ========================= GAME (🔥 핵심: 이전 SET 대기 자동 승격) ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
 
-    const setNo = btn.dataset.set;
-    const active = players.filter(p=>p.active);
+    const setNo = Number(btn.dataset.set);
+
+    let active = players.filter(p=>p.active);
+
+    // 🔥 이전 SET 대기자 자동 포함
+    if(setNo > 1 && setStore[setNo - 1]){
+
+      const prevPlayed = new Set();
+
+      setStore[setNo - 1].forEach(t=>{
+        prevPlayed.add(t[0].name);
+        prevPlayed.add(t[1].name);
+        prevPlayed.add(t[2].name);
+        prevPlayed.add(t[3].name);
+      });
+
+      const prevWaiting = players.filter(p =>
+        p.active && !prevPlayed.has(p.name)
+      );
+
+      active = [...new Set([...active, ...prevWaiting])];
+    }
 
     if(active.length < 4){
       alert("인원 부족");
@@ -174,7 +194,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* ========================= RESULT (SET별 대기 핵심) ========================= */
+/* ========================= RESULT (SET별 대기) ========================= */
 function renderResult(){
 
   resultEl.innerHTML = "";
