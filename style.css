@@ -115,7 +115,7 @@ h2 {
   font-size:14px;
   background:transparent;
   border:none;
-  color:#fff;
+  color:none;
   cursor:pointer;
   padding:0;
   margin-left:auto; /* 🔥 핵심: 오른쪽 끝 밀기 */
