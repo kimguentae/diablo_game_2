@@ -16,7 +16,7 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* ========================= ELEMENT ========================= */
+/* ========================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -130,7 +130,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used = new Set();
     let teams = [];
 
-    // fixed pair
     pairs.forEach(p=>{
       const a = active.find(x=>x.name===p[0]);
       const b = active.find(x=>x.name===p[1]);
@@ -175,10 +174,12 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* ========================= RESULT (🔥 핵심: SET별 대기) ========================= */
+/* ========================= RESULT (SET별 대기 핵심) ========================= */
 function renderResult(){
 
   resultEl.innerHTML = "";
+
+  const activePlayers = players.filter(p=>p.active);
 
   for(let i=1;i<=5;i++){
     const data = setStore[i];
@@ -192,19 +193,17 @@ function renderResult(){
 
     data.forEach((t,idx)=>{
 
+      const court = COURTS[idx] || "C";
+
+      html += `${court}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
+
       played.add(t[0].name);
       played.add(t[1].name);
       played.add(t[2].name);
       played.add(t[3].name);
-
-      const court = COURTS[idx] || "C";
-
-      html += `${court}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
     });
 
-    const waiting = players
-      .filter(p=>p.active)
-      .filter(p=>!played.has(p.name));
+    const waiting = activePlayers.filter(p => !played.has(p.name));
 
     html += `<br>대기 : ${waiting.map(p=>p.name).join(" ")}`;
 
