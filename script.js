@@ -99,8 +99,9 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     const setNo=btn.dataset.set;
 
-    /* 🔒 LOCK */
+    /* 🔒 LOCK이면 alert */
     if(setStore[setNo]?.locked){
+      alert("Locked");
       return;
     }
 
