@@ -14,8 +14,6 @@ const players = names.map(n => ({
 }));
 
 let pairs = [];
-
-// 🔥 핵심: 대기자는 1회성
 let carryOver = [];
 
 const listEl = document.getElementById("playerList");
@@ -122,11 +120,9 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     let active = players.filter(p=>p.active);
 
-    // 🔥 1회만 합류 후 즉시 소멸
-    if(carryOver.length > 0){
-      active = [...active, ...carryOver];
-      carryOver = [];
-    }
+    // 🔥 대기자 먼저 합류
+    active = [...carryOver, ...active];
+    carryOver = [];
 
     active = [...new Map(active.map(p=>[p.name,p])).values()];
 
@@ -152,25 +148,15 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let rest = active.filter(p=>!used.has(p.name));
     shuffle(rest);
 
-    let solo = [];
-    for(let i=0;i<rest.length;i+=2){
-      if(rest[i+1]){
-        solo.push([rest[i],rest[i+1]]);
-      }
-    }
-
-    let allTeams = [...teams,...solo];
-    shuffle(allTeams);
-
     let matches = [];
 
     for(let i=0;i<COURTS.length;i++){
-      if(allTeams[i*2] && allTeams[i*2+1]){
+      if(rest[i*4+3]){
         matches.push([
-          allTeams[i*2][0],
-          allTeams[i*2][1],
-          allTeams[i*2+1][0],
-          allTeams[i*2+1][1]
+          rest[i*4],
+          rest[i*4+1],
+          rest[i*4+2],
+          rest[i*4+3]
         ]);
       }
     }
@@ -180,23 +166,31 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       m.forEach(p=>played.add(p.name));
     });
 
-    // 🔥 다음 SET 전달용 (단, 다음 SET에서만 사용되고 다시 사라짐)
     carryOver = active.filter(p=>!played.has(p.name));
 
-    renderResult();
+    renderResult(matches);
   };
 });
 
 /* ================= RESULT ================= */
-function renderResult(){
+function renderResult(matches){
   resultEl.innerHTML = "";
 
   const div = document.createElement("div");
   div.className = "result-set";
 
   div.innerHTML = `
-    GAME RESULT<br><br>
-    대기 (다음 1회만 반영): ${carryOver.map(p=>p.name).join(" ")}
+    <b>GAME RESULT</b><br><br>
+
+    ${matches.map((m,i)=>`
+      ${COURTS[i]}코트 :
+      ${m[0].name} ${m[1].name} vs ${m[2].name} ${m[3].name}
+    `).join("<br>")}
+
+    <br><br>
+
+    <b>대기</b><br>
+    ${carryOver.length ? carryOver.map(p=>p.name).join(" ") : "없음"}
   `;
 
   resultEl.appendChild(div);
