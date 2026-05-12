@@ -33,6 +33,7 @@ h2 {
   padding: 8px 2px;
   border: 1px solid #222;
   user-select: none;
+  transition: 0.1s;
 }
 
 .player:active {
@@ -58,16 +59,18 @@ h2 {
   margin-bottom: 6px;
 }
 
-/* select = 휠 (스크롤) */
+/* 휠(select) */
 select {
   flex: 1;
-  font-size: 10px;
+  font-size: 12px;
   background: #111;
   color: #fff;
   border: 1px solid #333;
+  border-radius: 6px;
+  padding: 6px;
 }
 
-/* 🔥 + 버튼 (PLAYER +랑 동일 느낌) */
+/* + 버튼 (PLAYER +랑 동일 컨셉) */
 .guest {
   width: 40px;
   text-align: center;
