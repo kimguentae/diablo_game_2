@@ -15,16 +15,19 @@ const players = names.map(n => ({
 
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
+let prevWaiting = []; // 🔥 이전 SET 대기자 저장
 
+/* ========================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
+
 const p1 = document.getElementById("p1");
 const p2 = document.getElementById("p2");
 const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
-/* PLAYER */
+/* ========================= PLAYER ========================= */
 function renderPlayers(){
   listEl.innerHTML = "";
 
@@ -37,139 +40,170 @@ function renderPlayers(){
     const div = document.createElement("div");
     div.className = "player" + (p.active ? " active" : "");
     div.textContent = p.name;
+
     div.onclick = ()=>{
       p.active = !p.active;
       renderAll();
     };
+
     listEl.appendChild(div);
   });
 
   const guest = document.createElement("div");
   guest.className = "player guest";
   guest.textContent = "+";
+
   guest.onclick = ()=>{
     const name = prompt("GUEST NAME");
-    if(name){
-      players.push({name, active:true});
-      renderAll();
-    }
+    if(!name) return;
+    players.push({name, active:true});
+    renderAll();
   };
-  listEl.appendChild(guest);
 
+  listEl.appendChild(guest);
   countEl.textContent = players.filter(p=>p.active).length;
 }
 
-/* SELECT */
+/* ========================= SELECT ========================= */
 function renderSelect(){
   const active = players.filter(p=>p.active);
-  p1.innerHTML = '<option value="">PLAYER1</option>';
-  p2.innerHTML = '<option value="">PLAYER2</option>';
+  p1.innerHTML = "";
+  p2.innerHTML = "";
+  p1.appendChild(new Option("PLAYER1",""));
+  p2.appendChild(new Option("PLAYER2",""));
   active.forEach(p=>{
     p1.appendChild(new Option(p.name,p.name));
     p2.appendChild(new Option(p.name,p.name));
   });
 }
 
-/* FIXED PAIR */
+/* ========================= FIXED PAIR ========================= */
 addPair.onclick = ()=>{
-  if(!p1.value || !p2.value || p1.value === p2.value) return;
-  if(pairs.some(x=>x.includes(p1.value)||x.includes(p2.value))) return;
-  pairs.push([p1.value,p2.value]);
-  p1.value = p2.value = "";
+  const a = p1.value;
+  const b = p2.value;
+  if(!a || !b || a===b) return;
+  if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
+  pairs.push([a,b]);
+  p1.value=""; p2.value="";
   renderAll();
 };
 
 function renderPairs(){
-  pairList.innerHTML = "";
+  pairList.innerHTML="";
   pairs.forEach((p,i)=>{
-    const div = document.createElement("div");
-    div.className = "pairItem";
-    div.textContent = `PAIR ${i+1} : ${p[0]} ${p[1]}`;
-    div.onclick = ()=>{
-      pairs = pairs.filter(x=>x!==p);
+    const div=document.createElement("div");
+    div.className="pairItem";
+    div.textContent=`PAIR ${i+1} : ${p[0]} ${p[1]}`;
+    div.onclick=()=>{
+      pairs=pairs.filter(x=>x!==p);
       renderAll();
     };
     pairList.appendChild(div);
   });
 }
 
-/* GAME GENERATE */
+/* ========================= SET GENERATE ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
-  btn.onclick = ()=>{
-    const setNo = btn.dataset.set;
+  btn.onclick=()=>{
+    const setNo = Number(btn.dataset.set);
     const active = players.filter(p=>p.active);
-    if(active.length < 4) return alert("인원 부족");
+    if(active.length<4){
+      alert("인원 부족");
+      return;
+    }
 
+    /* 1️⃣ 이전 SET 대기자 우선 */
+    let ordered = [];
+    if(setNo>1 && prevWaiting.length){
+      ordered = [...prevWaiting];
+    }
+
+    let rest = active.filter(p=>!ordered.some(x=>x.name===p.name));
+    shuffle(rest);
+    ordered = [...ordered, ...rest];
+
+    /* 2️⃣ 고정페어 처리 */
     let used = new Set();
     let teams = [];
 
-    pairs.forEach(p=>{
-      const a = active.find(x=>x.name===p[0]);
-      const b = active.find(x=>x.name===p[1]);
-      if(a && b){
+    pairs.forEach(pair=>{
+      const a = ordered.find(p=>p.name===pair[0]);
+      const b = ordered.find(p=>p.name===pair[1]);
+      if(a && b && !used.has(a.name) && !used.has(b.name)){
         teams.push([a,b]);
-        used.add(a.name);
-        used.add(b.name);
+        used.add(a.name); used.add(b.name);
       }
     });
 
-    let rest = active.filter(p=>!used.has(p.name));
-    shuffle(rest);
-
-    for(let i=0;i<rest.length;i+=2){
-      if(rest[i+1]) teams.push([rest[i],rest[i+1]]);
+    /* 3️⃣ 나머지 랜덤 팀 */
+    let remain = ordered.filter(p=>!used.has(p.name));
+    let soloTeams=[];
+    for(let i=0;i<remain.length;i+=2){
+      if(remain[i+1]){
+        soloTeams.push([remain[i],remain[i+1]]);
+      }
     }
 
-    shuffle(teams);
+    let allTeams=[...teams,...soloTeams];
 
-    let matches = [];
-    for(let i=0;i<Math.min(COURTS.length, teams.length/2);i++){
-      matches.push([
-        teams[i*2][0], teams[i*2][1],
-        teams[i*2+1][0], teams[i*2+1][1]
-      ]);
+    /* 4️⃣ 3코트만 경기 배정 */
+    let matches=[];
+    let played=new Set();
+
+    for(let i=0;i<COURTS.length;i++){
+      if(allTeams[i*2] && allTeams[i*2+1]){
+        const t1=allTeams[i*2];
+        const t2=allTeams[i*2+1];
+        matches.push([t1[0],t1[1],t2[0],t2[1]]);
+        [...t1,...t2].forEach(p=>played.add(p.name));
+      }
     }
 
-    setStore[setNo] = matches;
+    /* 5️⃣ 대기자 저장 (🔥 핵심) */
+    prevWaiting = active.filter(p=>!played.has(p.name));
+
+    setStore[setNo]=matches;
     renderResult();
   };
 });
 
-/* RESULT */
+/* ========================= RESULT ========================= */
 function renderResult(){
-  resultEl.innerHTML = "";
-  const activePlayers = players.filter(p=>p.active);
+  resultEl.innerHTML="";
+  const activePlayers=players.filter(p=>p.active);
 
   for(let i=1;i<=5;i++){
-    const data = setStore[i];
+    const data=setStore[i];
     if(!data) continue;
 
-    let played = new Set();
-    let html = `(${i}SET)<br>`;
+    const div=document.createElement("div");
+    div.className="result-set";
+
+    let played=new Set();
+    let html=`(${i}SET)<br>`;
 
     data.forEach((t,idx)=>{
-      html += `${COURTS[idx]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
+      html+=`${COURTS[idx]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
       t.forEach(p=>played.add(p.name));
     });
 
-    const waiting = activePlayers.filter(p=>!played.has(p.name));
-    html += `<br>대기 : ${waiting.map(p=>p.name).join(" ")}`;
+    const waiting=activePlayers.filter(p=>!played.has(p.name));
+    html+=`<br>대기 : ${waiting.map(p=>p.name).join(" ")}`;
 
-    const div = document.createElement("div");
-    div.className = "result-set";
-    div.innerHTML = html;
+    div.innerHTML=html;
     resultEl.appendChild(div);
   }
 }
 
-/* UTIL */
+/* ========================= UTIL ========================= */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]] = [arr[j],arr[i]];
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
   }
 }
 
+/* ========================= INIT ========================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
