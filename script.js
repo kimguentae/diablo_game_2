@@ -58,37 +58,23 @@ function renderPlayers(){
 /* =========================
    FIXED PAIR SELECT
 ========================= */
-function renderPairSelect(){
+function renderSelect(){
   const active = players.filter(p=>p.active);
 
   p1.innerHTML = "";
   p2.innerHTML = "";
 
-  const o1 = document.createElement("option");
-  o1.value = "";
-  o1.textContent = "PLAYER 1";
-
-  const o2 = document.createElement("option");
-  o2.value = "";
-  o2.textContent = "PLAYER 2";
-
-  p1.appendChild(o1);
-  p2.appendChild(o2);
+  p1.appendChild(new Option("PLAYER1",""));
+  p2.appendChild(new Option("PLAYER2",""));
 
   active.forEach(p=>{
-    const a = document.createElement("option");
-    const b = document.createElement("option");
-
-    a.value = b.value = p.name;
-    a.textContent = b.textContent = p.name;
-
-    p1.appendChild(a);
-    p2.appendChild(b);
+    p1.appendChild(new Option(p.name,p.name));
+    p2.appendChild(new Option(p.name,p.name));
   });
 }
 
 /* =========================
-   PAIR 생성
+   PAIR 추가
 ========================= */
 addPairBtn.onclick = ()=>{
   const a = p1.value;
@@ -113,7 +99,7 @@ function renderPairs(){
 
     div.onclick = ()=>{
       pairs = pairs.filter(x=>x!==p);
-      renderPairs();
+      renderAll();
     };
 
     pairList.appendChild(div);
@@ -127,7 +113,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
 
     const setNo = btn.dataset.set;
-    let active = players.filter(p=>p.active);
+    const active = players.filter(p=>p.active);
 
     if(active.length < 4){
       alert("인원 부족");
@@ -141,7 +127,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     for(let i=0;i<COURTS.length;i++){
       if(pool.length < 4) break;
-
       matches.push(pool.splice(0,4));
     }
 
@@ -156,17 +141,17 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 function renderResult(){
   resultEl.innerHTML = "";
 
-  for(let s=1;s<=5;s++){
-    const data = setStore[s];
+  for(let i=1;i<=5;i++){
+    const data = setStore[i];
     if(!data) continue;
 
     const div = document.createElement("div");
     div.className = "result-set";
 
     div.innerHTML =
-      `(${s}SET)<br>` +
-      data.map((t,i)=>
-        `${COURTS[i]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}`
+      `(${i}SET)<br>` +
+      data.map((t,idx)=>
+        `${COURTS[idx]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}`
       ).join("<br>");
 
     resultEl.appendChild(div);
@@ -188,8 +173,9 @@ function shuffle(arr){
 ========================= */
 function renderAll(){
   renderPlayers();
-  renderPairSelect();
+  renderSelect();
   renderPairs();
+  renderResult();
 }
 
 renderAll();
