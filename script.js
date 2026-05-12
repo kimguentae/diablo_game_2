@@ -54,8 +54,9 @@ function renderPlayers(){
 /* SELECT */
 function renderSelect(){
   const active = players.filter(p=>p.active);
-  p1.innerHTML = '<option value="">PLAYER1</option>';
-  p2.innerHTML = '<option value="">PLAYER2</option>';
+
+  p1.innerHTML='<option value="">P1</option>';
+  p2.innerHTML='<option value="">P2</option>';
 
   active.forEach(p=>{
     p1.appendChild(new Option(p.name,p.name));
@@ -63,7 +64,7 @@ function renderSelect(){
   });
 }
 
-/* FIXED PAIR */
+/* PAIR */
 addPair.onclick=()=>{
   if(!p1.value||!p2.value||p1.value===p2.value) return;
   if(pairs.some(x=>x.includes(p1.value)||x.includes(p2.value))) return;
@@ -84,14 +85,14 @@ function renderPairs(){
   });
 }
 
-/* GAME 생성 */
+/* GAME */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
+
     const setNo=btn.dataset.set;
 
-    // 🔒 이미 생성된 SET이면 유지
     if(setStore[setNo]?.locked){
-      alert("이미 확정된 SET입니다");
+      alert("LOCK 상태입니다");
       return;
     }
 
@@ -148,56 +149,61 @@ function renderResult(){
     const set=setStore[i];
     if(!set) continue;
 
-    let played=new Set();
-    let html=`(${i}SET) `;
+    const div=document.createElement("div");
+    div.className="result-set";
 
-    html+=`<button class="lockBtn" onclick="lockSet(${i})">✔</button><br><br>`;
+    if(set.locked) div.classList.add("locked");
+
+    let html=`(${i}SET) 
+      <button class="lockBtn" onclick="toggleLock(${i})">
+        ${set.locked?"UNLOCK":"LOCK"}
+      </button><br><br>`;
 
     set.matches.forEach((m,idx)=>{
+
       html+=`
       ${COURTS[idx]}코트 
       ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name}
-      <br>
 
-      <select onchange="setScore(${i},${idx},'s1',this.value)">
-        ${scoreOpt(m.s1)}
-      </select>
-      :
-      <select onchange="setScore(${i},${idx},'s2',this.value)">
-        ${scoreOpt(m.s2)}
-      </select>
+      (${scoreSel(m.s1,i,idx,'s1')}) : (${scoreSel(m.s2,i,idx,'s2')})
       <br><br>
       `;
 
+    });
+
+    const played=new Set();
+    set.matches.forEach(m=>{
       [...m.team1,...m.team2].forEach(p=>played.add(p.name));
     });
 
     const wait=activePlayers.filter(p=>!played.has(p.name));
     html+=`대기 : ${wait.map(p=>p.name).join(" ")}`;
 
-    const d=document.createElement("div");
-    d.className="result-set";
-    d.innerHTML=html;
-    resultEl.appendChild(d);
+    div.innerHTML=html;
+    resultEl.appendChild(div);
   }
 }
 
-/* SCORE */
-function scoreOpt(val){
-  let s="";
+/* SCORE UI */
+function scoreSel(val,setNo,idx,key){
+  let s=`<select class="scoreSelect"
+    onchange="setScore(${setNo},${idx},'${key}',this.value)"
+    ${setStore[setNo]?.locked?"disabled":""}>`;
+
   for(let i=0;i<=6;i++){
     s+=`<option value="${i}" ${i==val?"selected":""}>${i}</option>`;
   }
-  return s;
+
+  return s+"</select>";
 }
 
 function setScore(setNo,idx,key,val){
   setStore[setNo].matches[idx][key]=Number(val);
 }
 
-/* LOCK */
-function lockSet(setNo){
-  setStore[setNo].locked=true;
+/* LOCK TOGGLE */
+function toggleLock(setNo){
+  setStore[setNo].locked=!setStore[setNo].locked;
   renderResult();
 }
 
