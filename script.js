@@ -23,12 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const p2 = document.getElementById("p2");
   const addBtn = document.getElementById("addPair");
   const pairList = document.getElementById("pairList");
+  const result = document.getElementById("result");
 
   /* =========================
      PLAYER
   ========================= */
   function renderPlayers(){
-
     listEl.innerHTML = "";
 
     let sorted = [
@@ -56,26 +56,25 @@ document.addEventListener("DOMContentLoaded", () => {
      SELECT
   ========================= */
   function renderSelect(){
-
     const available = players.filter(p => p.active && !p.paired);
 
     p1.innerHTML = "";
     p2.innerHTML = "";
 
-    const o1 = document.createElement("option");
-    o1.value = "";
+    let o1 = document.createElement("option");
     o1.textContent = "PLAYER 1";
+    o1.value = "";
 
-    const o2 = document.createElement("option");
-    o2.value = "";
+    let o2 = document.createElement("option");
     o2.textContent = "PLAYER 2";
+    o2.value = "";
 
     p1.appendChild(o1);
     p2.appendChild(o2);
 
     available.forEach(p=>{
-      const a = document.createElement("option");
-      const b = document.createElement("option");
+      let a = document.createElement("option");
+      let b = document.createElement("option");
 
       a.value = b.value = p.name;
       a.textContent = b.textContent = p.name;
@@ -84,30 +83,30 @@ document.addEventListener("DOMContentLoaded", () => {
       p2.appendChild(b);
     });
 
-    syncSelect();
+    sync();
   }
 
-  function syncSelect(){
-    const v = p1.value;
+  function sync(){
+    let v = p1.value;
 
     Array.from(p2.options).forEach(o=>{
       o.disabled = (o.value === v && v !== "");
     });
   }
 
-  p1.onchange = syncSelect;
+  p1.onchange = sync;
 
   /* =========================
-     PAIR 생성
+     PAIR
   ========================= */
   addBtn.onclick = ()=>{
-    const a = p1.value;
-    const b = p2.value;
+    let a = p1.value;
+    let b = p2.value;
 
     if(!a || !b || a===b) return;
 
-    const pa = players.find(x=>x.name===a);
-    const pb = players.find(x=>x.name===b);
+    let pa = players.find(x=>x.name===a);
+    let pb = players.find(x=>x.name===b);
 
     pa.paired = true;
     pb.paired = true;
@@ -121,11 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
      PAIR 출력
   ========================= */
   function renderPairs(){
-
     pairList.innerHTML = "";
 
     pairs.forEach((p,i)=>{
-      const div = document.createElement("div");
+      let div = document.createElement("div");
       div.className = "pair";
       div.textContent = `PAIR ${i+1} : ${p[0]} ${p[1]}`;
 
@@ -143,6 +141,38 @@ document.addEventListener("DOMContentLoaded", () => {
       pairList.appendChild(div);
     });
   }
+
+  /* =========================
+     GAME (간단 랜덤)
+  ========================= */
+  document.querySelectorAll(".genBtn").forEach(btn=>{
+    btn.onclick = ()=>{
+      let active = players.filter(p=>p.active);
+
+      if(active.length < 4){
+        alert("인원 부족");
+        return;
+      }
+
+      let pool = [...active];
+      pool.sort(()=>Math.random()-0.5);
+
+      let teams = [];
+
+      while(pool.length >= 4){
+        teams.push(pool.splice(0,4));
+      }
+
+      result.innerHTML = "";
+      teams.forEach((t,i)=>{
+        let div = document.createElement("div");
+        div.style.marginTop = "5px";
+        div.textContent =
+          `SET ${i+1} : ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}`;
+        result.appendChild(div);
+      });
+    };
+  });
 
   function renderAll(){
     renderPlayers();
