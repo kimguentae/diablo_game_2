@@ -112,7 +112,7 @@ h2 {
 
 /* ================= LOCK BUTTON ================= */
 .lockBtn {
-  background: none !important;
+  background: transparent;
   border: none;
   padding: 0;
   cursor: pointer;
