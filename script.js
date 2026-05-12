@@ -124,7 +124,7 @@ function renderPairs(){
 }
 
 /* =========================
-   🔥 GAME (핵심 수정)
+   🔥 GAME (최종 안정 버전)
 ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
@@ -138,31 +138,32 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     }
 
     let used = new Set();
-    let temp = [];
+    let pool = [];
 
-    // 🔥 1. FIXED PAIR 먼저 한 팀으로 넣기
+    // 1️⃣ FIXED PAIR → 먼저 팀으로 고정
     pairs.forEach(p=>{
       const a = active.find(x=>x.name === p[0]);
       const b = active.find(x=>x.name === p[1]);
 
       if(a && b){
-        temp.push(a, b);
+        pool.push(a, b);
         used.add(a.name);
         used.add(b.name);
       }
     });
 
-    // 🔥 2. 나머지 인원 추가
+    // 2️⃣ 남은 인원
     let rest = active.filter(p => !used.has(p.name));
     shuffle(rest);
-    temp.push(...rest);
 
-    // 🔥 3. 4명씩 경기 생성
+    pool.push(...rest);
+
+    // 3️⃣ 4명씩 경기 생성 (팀 섞여서 자연스럽게 매칭)
     let matches = [];
 
-    for(let i=0;i<temp.length;i+=4){
-      if(temp.slice(i,i+4).length === 4){
-        matches.push(temp.slice(i,i+4));
+    for(let i=0;i<pool.length;i+=4){
+      if(pool.slice(i,i+4).length === 4){
+        matches.push(pool.slice(i,i+4));
       }
     }
 
