@@ -16,23 +16,17 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* =========================
-   ELEMENT
-========================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
 
-const p1Box = document.getElementById("p1Box");
-const p2Box = document.getElementById("p2Box");
+const p1 = document.getElementById("p1");
+const p2 = document.getElementById("p2");
 const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
-let selected1 = "";
-let selected2 = "";
-
 /* =========================
-   PLAYER + GUEST
+   PLAYER
 ========================= */
 function renderPlayers(){
   listEl.innerHTML = "";
@@ -73,33 +67,33 @@ function renderPlayers(){
 }
 
 /* =========================
-   FIXED PAIR SELECT (div 방식)
+   SELECT
 ========================= */
-function openSelect(target){
+function renderSelect(){
   const active = players.filter(p=>p.active);
-  const name = prompt(active.map(p=>p.name).join("\n") + "\n\n이름 입력");
 
-  if(!name) return;
+  p1.innerHTML = "";
+  p2.innerHTML = "";
 
-  if(target === 1){
-    selected1 = name;
-    p1Box.textContent = name;
-  } else {
-    selected2 = name;
-    p2Box.textContent = name;
-  }
+  p1.appendChild(new Option("PLAYER1",""));
+  p2.appendChild(new Option("PLAYER2",""));
+
+  active.forEach(p=>{
+    p1.appendChild(new Option(p.name,p.name));
+    p2.appendChild(new Option(p.name,p.name));
+  });
 }
-
-p1Box.onclick = ()=>openSelect(1);
-p2Box.onclick = ()=>openSelect(2);
 
 /* =========================
    PAIR
 ========================= */
 addPair.onclick = ()=>{
-  if(!selected1 || !selected2 || selected1 === selected2) return;
+  const a = p1.value;
+  const b = p2.value;
 
-  pairs.push([selected1, selected2]);
+  if(!a || !b || a===b) return;
+
+  pairs.push([a,b]);
   renderPairs();
 };
 
@@ -172,9 +166,7 @@ function renderResult(){
   }
 }
 
-/* =========================
-   shuffle
-========================= */
+/* shuffle */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -182,11 +174,10 @@ function shuffle(arr){
   }
 }
 
-/* =========================
-   INIT
-========================= */
+/* INIT */
 function renderAll(){
   renderPlayers();
+  renderSelect();
   renderPairs();
   renderResult();
 }
