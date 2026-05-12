@@ -85,27 +85,30 @@ h2 { font-size:12px; color:#aaa; }
   color:#fff;
 }
 
-/* RESULT */
+/* GAME RESULT */
 .result-set {
   margin-top:10px;
   padding:8px;
   background:#111;
   border-radius:6px;
-  font-size:11px;
+
+  /* 🔥 글씨 키움 */
+  font-size:14px;
+  line-height:1.6;
 }
 
-/* 🔒 LOCK 버튼 (요청 반영 핵심) */
+/* LOCK */
 .lockBtn {
   font-size:10px;
   margin-left:6px;
   background:transparent;
   border:none;
-  color:transparent;   /* color none 효과 */
-  text-shadow:0 0 0 #00c853; /* 아이콘 유지 */
+  color:transparent;
+  text-shadow:0 0 0 #00c853;
   cursor:pointer;
 }
 
-/* SCORE SELECT */
+/* SCORE */
 .result-set select {
   background:#1c1c1c;
   color:#fff;
