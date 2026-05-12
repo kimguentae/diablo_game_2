@@ -23,13 +23,16 @@ const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
 
-const p1 = document.getElementById("p1");
-const p2 = document.getElementById("p2");
+const p1Box = document.getElementById("p1Box");
+const p2Box = document.getElementById("p2Box");
 const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
+let selected1 = "";
+let selected2 = "";
+
 /* =========================
-   PLAYER + GUEST (유지)
+   PLAYER + GUEST
 ========================= */
 function renderPlayers(){
   listEl.innerHTML = "";
@@ -52,7 +55,6 @@ function renderPlayers(){
     listEl.appendChild(div);
   });
 
-  // GUEST 버튼 유지 (삭제 금지 원칙 반영)
   const guest = document.createElement("div");
   guest.className = "player guest";
   guest.textContent = "+";
@@ -61,11 +63,7 @@ function renderPlayers(){
     const name = prompt("GUEST NAME");
     if(!name) return;
 
-    players.push({
-      name,
-      active:true
-    });
-
+    players.push({name, active:true});
     renderAll();
   };
 
@@ -75,33 +73,33 @@ function renderPlayers(){
 }
 
 /* =========================
-   FIXED PAIR SELECT
+   FIXED PAIR SELECT (div 방식)
 ========================= */
-function renderSelect(){
+function openSelect(target){
   const active = players.filter(p=>p.active);
+  const name = prompt(active.map(p=>p.name).join("\n") + "\n\n이름 입력");
 
-  p1.innerHTML = "";
-  p2.innerHTML = "";
+  if(!name) return;
 
-  p1.appendChild(new Option("PLAYER1",""));
-  p2.appendChild(new Option("PLAYER2",""));
-
-  active.forEach(p=>{
-    p1.appendChild(new Option(p.name,p.name));
-    p2.appendChild(new Option(p.name,p.name));
-  });
+  if(target === 1){
+    selected1 = name;
+    p1Box.textContent = name;
+  } else {
+    selected2 = name;
+    p2Box.textContent = name;
+  }
 }
+
+p1Box.onclick = ()=>openSelect(1);
+p2Box.onclick = ()=>openSelect(2);
 
 /* =========================
    PAIR
 ========================= */
 addPair.onclick = ()=>{
-  const a = p1.value;
-  const b = p2.value;
+  if(!selected1 || !selected2 || selected1 === selected2) return;
 
-  if(!a || !b || a===b) return;
-
-  pairs.push([a,b]);
+  pairs.push([selected1, selected2]);
   renderPairs();
 };
 
@@ -189,7 +187,6 @@ function shuffle(arr){
 ========================= */
 function renderAll(){
   renderPlayers();
-  renderSelect();
   renderPairs();
   renderResult();
 }
