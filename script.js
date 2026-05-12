@@ -12,8 +12,8 @@ const countEl = document.getElementById("count");
 const p1Sel = document.getElementById("p1");
 const p2Sel = document.getElementById("p2");
 
-const pairList = document.getElementById("pairList");
 const addPairBtn = document.getElementById("addPair");
+const pairList = document.getElementById("pairList");
 
 let pairs = [];
 
@@ -44,7 +44,7 @@ renderPlayers();
 renderSelect();
 
 /* =========================
-   SELECT BOX
+   SELECT (휠)
 ========================= */
 function renderSelect(){
   const active = players.filter(p=>p.active);
@@ -57,7 +57,7 @@ function renderSelect(){
     const o2 = document.createElement("option");
 
     o1.value = o2.value = p.name;
-    o1.text = o2.text = p.name;
+    o1.textContent = o2.textContent = p.name;
 
     p1Sel.appendChild(o1);
     p2Sel.appendChild(o2);
@@ -65,7 +65,7 @@ function renderSelect(){
 }
 
 /* =========================
-   PAIR 생성
+   PAIR 생성 (+ 버튼)
 ========================= */
 addPairBtn.onclick = ()=>{
   const a = p1Sel.value;
@@ -74,7 +74,6 @@ addPairBtn.onclick = ()=>{
   if(!a || !b || a === b) return;
 
   const id = Date.now();
-
   pairs.push({id, a, b});
   renderPairs();
 };
@@ -85,9 +84,9 @@ function renderPairs(){
   pairs.forEach(p=>{
     const div = document.createElement("div");
     div.className = "pair";
-    div.innerText = `PAIR: ${p.a} + ${p.b}`;
+    div.textContent = `PAIR: ${p.a} + ${p.b}`;
 
-    /* 클릭하면 삭제 */
+    // 클릭 삭제
     div.onclick = ()=>{
       pairs = pairs.filter(x => x.id !== p.id);
       renderPairs();
