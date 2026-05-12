@@ -50,7 +50,7 @@ h2 {
 }
 
 /* =========================
-   FIXED PAIR (핵심 수정 영역)
+   FIXED PAIR
 ========================= */
 .pairBox {
   display: grid;
@@ -59,7 +59,7 @@ h2 {
   margin-bottom: 10px;
 }
 
-/* select (브라우저 기본 유지 + 강제 통일) */
+/* select */
 .pairBox select {
   background: #1c1c1c;
   color: #fff;
@@ -69,21 +69,17 @@ h2 {
   font-size: 9px;
 
   height: 34px;
-  box-sizing: border-box;
+  line-height: 34px;
 
   padding: 0;
-  margin: 0;
-
   text-align: center;
   text-align-last: center;
 
   appearance: none;
-  -webkit-appearance: none;
-
-  line-height: 34px;
+  box-sizing: border-box;
 }
 
-/* + 버튼 (🔥 여기 핵심 수정 완료) */
+/* + 버튼 (🔥 핵심 수정 완료) */
 #addPair {
   height: 34px;
   box-sizing: border-box;
@@ -93,11 +89,9 @@ h2 {
   justify-content: center;
 
   font-size: 12px;
+  line-height: 1;
 
   padding: 0;
-  margin: 0;
-
-  line-height: 34px;
 
   border: 1px dashed #555;
   border-radius: 6px;
