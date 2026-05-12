@@ -9,46 +9,39 @@ const names = [
 ];
 
 const players = names.map(n => ({
-  name: n,
-  active: false
+  name:n,
+  active:false
 }));
 
 let pairs = [];
+const setStore = {1:null,2:null,3:null,4:null,5:null};
+let prevWaiting = []; // 🔥 이전 SET 대기자 저장
 
-/* 🔥 SET 데이터 저장 */
-const matchStore = {
-  1: null,
-  2: null,
-  3: null,
-  4: null,
-  5: null
-};
-
-/* ================= DOM ================= */
+/* ========================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
-const gameEl = document.getElementById("result"); // 🔥 GAME 영역
+const resultEl = document.getElementById("result");
 
 const p1 = document.getElementById("p1");
 const p2 = document.getElementById("p2");
 const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
-/* ================= PLAYER ================= */
+/* ========================= PLAYER ========================= */
 function renderPlayers(){
   listEl.innerHTML = "";
 
   const sorted = [
-    ...players.filter(p => p.active),
-    ...players.filter(p => !p.active)
+    ...players.filter(p=>p.active),
+    ...players.filter(p=>!p.active)
   ];
 
-  sorted.forEach(p => {
+  sorted.forEach(p=>{
     const div = document.createElement("div");
     div.className = "player" + (p.active ? " active" : "");
     div.textContent = p.name;
 
-    div.onclick = () => {
+    div.onclick = ()=>{
       p.active = !p.active;
       renderAll();
     };
@@ -60,176 +53,162 @@ function renderPlayers(){
   guest.className = "player guest";
   guest.textContent = "+";
 
-  guest.onclick = () => {
+  guest.onclick = ()=>{
     const name = prompt("GUEST NAME");
-    if (!name) return;
-
-    players.push({ name, active: true });
+    if(!name) return;
+    players.push({name, active:true});
     renderAll();
   };
 
   listEl.appendChild(guest);
-
-  countEl.textContent = players.filter(p => p.active).length;
+  countEl.textContent = players.filter(p=>p.active).length;
 }
 
-/* ================= SELECT ================= */
+/* ========================= SELECT ========================= */
 function renderSelect(){
-  const active = players.filter(p => p.active);
-
+  const active = players.filter(p=>p.active);
   p1.innerHTML = "";
   p2.innerHTML = "";
-
-  p1.appendChild(new Option("PLAYER1", ""));
-  p2.appendChild(new Option("PLAYER2", ""));
-
-  active.forEach(p => {
-    p1.appendChild(new Option(p.name, p.name));
-    p2.appendChild(new Option(p.name, p.name));
+  p1.appendChild(new Option("PLAYER1",""));
+  p2.appendChild(new Option("PLAYER2",""));
+  active.forEach(p=>{
+    p1.appendChild(new Option(p.name,p.name));
+    p2.appendChild(new Option(p.name,p.name));
   });
 }
 
-/* ================= FIXED PAIR ================= */
-addPair.onclick = () => {
+/* ========================= FIXED PAIR ========================= */
+addPair.onclick = ()=>{
   const a = p1.value;
   const b = p2.value;
-
-  if (!a || !b || a === b) return;
-
-  if (pairs.some(x => x.includes(a) || x.includes(b))) return;
-
-  pairs.push([a, b]);
-
-  p1.value = "";
-  p2.value = "";
-
+  if(!a || !b || a===b) return;
+  if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
+  pairs.push([a,b]);
+  p1.value=""; p2.value="";
   renderAll();
 };
 
 function renderPairs(){
-  pairList.innerHTML = "";
-
-  pairs.forEach((p, i) => {
-    const div = document.createElement("div");
-    div.className = "pairItem";
-    div.textContent = `PAIR ${i+1} : ${p[0]} ${p[1]}`;
-
-    div.onclick = () => {
-      pairs = pairs.filter(x => x !== p);
+  pairList.innerHTML="";
+  pairs.forEach((p,i)=>{
+    const div=document.createElement("div");
+    div.className="pairItem";
+    div.textContent=`PAIR ${i+1} : ${p[0]} ${p[1]}`;
+    div.onclick=()=>{
+      pairs=pairs.filter(x=>x!==p);
       renderAll();
     };
-
     pairList.appendChild(div);
   });
 }
 
-/* ================= SET GENERATE ================= */
-document.querySelectorAll(".genBtn").forEach(btn => {
-  btn.onclick = () => {
-
-    const setNo = btn.dataset.set;
-    const active = players.filter(p => p.active);
-
-    if (active.length < 4) {
+/* ========================= SET GENERATE ========================= */
+document.querySelectorAll(".genBtn").forEach(btn=>{
+  btn.onclick=()=>{
+    const setNo = Number(btn.dataset.set);
+    const active = players.filter(p=>p.active);
+    if(active.length<4){
       alert("인원 부족");
       return;
     }
 
+    /* 1️⃣ 이전 SET 대기자 우선 */
+    let ordered = [];
+    if(setNo>1 && prevWaiting.length){
+      ordered = [...prevWaiting];
+    }
+
+    let rest = active.filter(p=>!ordered.some(x=>x.name===p.name));
+    shuffle(rest);
+    ordered = [...ordered, ...rest];
+
+    /* 2️⃣ 고정페어 처리 */
     let used = new Set();
     let teams = [];
 
-    pairs.forEach(p => {
-      const a = active.find(x => x.name === p[0]);
-      const b = active.find(x => x.name === p[1]);
-
-      if (a && b) {
-        teams.push([a, b]);
-        used.add(a.name);
-        used.add(b.name);
+    pairs.forEach(pair=>{
+      const a = ordered.find(p=>p.name===pair[0]);
+      const b = ordered.find(p=>p.name===pair[1]);
+      if(a && b && !used.has(a.name) && !used.has(b.name)){
+        teams.push([a,b]);
+        used.add(a.name); used.add(b.name);
       }
     });
 
-    let rest = active.filter(p => !used.has(p.name));
-    shuffle(rest);
-
-    let solo = [];
-    for (let i = 0; i < rest.length; i += 2) {
-      if (rest[i + 1]) {
-        solo.push([rest[i], rest[i + 1]]);
+    /* 3️⃣ 나머지 랜덤 팀 */
+    let remain = ordered.filter(p=>!used.has(p.name));
+    let soloTeams=[];
+    for(let i=0;i<remain.length;i+=2){
+      if(remain[i+1]){
+        soloTeams.push([remain[i],remain[i+1]]);
       }
     }
 
-    let allTeams = [...teams, ...solo];
-    shuffle(allTeams);
+    let allTeams=[...teams,...soloTeams];
 
-    let matches = [];
+    /* 4️⃣ 3코트만 경기 배정 */
+    let matches=[];
+    let played=new Set();
 
-    for (let i = 0; i < COURTS.length; i++) {
-      if (allTeams[i * 2] && allTeams[i * 2 + 1]) {
-        matches.push([
-          allTeams[i * 2][0],
-          allTeams[i * 2][1],
-          allTeams[i * 2 + 1][0],
-          allTeams[i * 2 + 1][1]
-        ]);
+    for(let i=0;i<COURTS.length;i++){
+      if(allTeams[i*2] && allTeams[i*2+1]){
+        const t1=allTeams[i*2];
+        const t2=allTeams[i*2+1];
+        matches.push([t1[0],t1[1],t2[0],t2[1]]);
+        [...t1,...t2].forEach(p=>played.add(p.name));
       }
     }
 
-    matchStore[setNo] = matches;
-    renderGame();
+    /* 5️⃣ 대기자 저장 (🔥 핵심) */
+    prevWaiting = active.filter(p=>!played.has(p.name));
+
+    setStore[setNo]=matches;
+    renderResult();
   };
 });
 
-/* ================= GAME (RESULT AREA) ================= */
-function renderGame(){
+/* ========================= RESULT ========================= */
+function renderResult(){
+  resultEl.innerHTML="";
+  const activePlayers=players.filter(p=>p.active);
 
-  gameEl.innerHTML = "";
+  for(let i=1;i<=5;i++){
+    const data=setStore[i];
+    if(!data) continue;
 
-  const activePlayers = players.filter(p => p.active);
+    const div=document.createElement("div");
+    div.className="result-set";
 
-  for (let i = 1; i <= 5; i++) {
+    let played=new Set();
+    let html=`(${i}SET)<br>`;
 
-    const data = matchStore[i];
-    if (!data) continue;
-
-    const div = document.createElement("div");
-    div.className = "result-set";
-
-    let html = `(${i}SET)<br>`;
-    let played = new Set();
-
-    data.forEach((t, idx) => {
-
-      const court = COURTS[idx] || "C";
-
-      html += `${court}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
-
-      t.forEach(p => played.add(p.name));
+    data.forEach((t,idx)=>{
+      html+=`${COURTS[idx]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
+      t.forEach(p=>played.add(p.name));
     });
 
-    const waiting = activePlayers.filter(p => !played.has(p.name));
+    const waiting=activePlayers.filter(p=>!played.has(p.name));
+    html+=`<br>대기 : ${waiting.map(p=>p.name).join(" ")}`;
 
-    html += `<br>대기 : ${waiting.map(p => p.name).join(" ") || "없음"}`;
-
-    div.innerHTML = html;
-    gameEl.appendChild(div);
+    div.innerHTML=html;
+    resultEl.appendChild(div);
   }
 }
 
-/* ================= UTIL ================= */
+/* ========================= UTIL ========================= */
 function shuffle(arr){
-  for (let i = arr.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
   }
 }
 
-/* ================= INIT ================= */
+/* ========================= INIT ========================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
   renderPairs();
-  renderGame();
+  renderResult();
 }
 
 renderAll();
