@@ -25,6 +25,7 @@ const pairList=document.getElementById("pairList");
 /* PLAYER */
 function renderPlayers(){
   listEl.innerHTML="";
+
   [...players.filter(p=>p.active),...players.filter(p=>!p.active)]
   .forEach(p=>{
     const d=document.createElement("div");
@@ -85,18 +86,19 @@ function renderPairs(){
   });
 }
 
-/* SET */
+/* ========================= SET GENERATION (핵심 수정) ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
     const setNo=btn.dataset.set;
-
     const active=players.filter(p=>p.active);
+
     if(active.length<4) return;
 
     let used=new Set();
     let teams=[];
 
+    // 고정페어
     pairs.forEach(p=>{
       const a=active.find(x=>x.name===p[0]);
       const b=active.find(x=>x.name===p[1]);
@@ -107,32 +109,46 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
+    // 나머지 자동 페어
     let rest=active.filter(p=>!used.has(p.name));
     shuffle(rest);
 
     for(let i=0;i<rest.length;i+=2){
-      if(rest[i+1]) teams.push([rest[i],rest[i+1]]);
+      if(rest[i+1]){
+        teams.push([rest[i],rest[i+1]]);
+      }
     }
 
     shuffle(teams);
 
+    /* 🔥 핵심 수정: 코트 기준 제거 */
     let matches=[];
-    for(let i=0;i<Math.min(COURTS.length,teams.length/2);i++){
+    let maxMatches=Math.floor(teams.length/2);
+
+    for(let i=0;i<maxMatches;i++){
+      const t1=teams[i*2];
+      const t2=teams[i*2+1];
+
+      if(!t1||!t2) continue;
+
       matches.push({
-        team1:teams[i*2],
-        team2:teams[i*2+1],
+        team1:t1,
+        team2:t2,
         s1:0,
         s2:0
       });
     }
 
-    setStore[setNo]={locked:false,matches};
+    setStore[setNo]={
+      locked:false,
+      matches
+    };
 
     renderResult();
   };
 });
 
-/* RESULT */
+/* ========================= RESULT ========================= */
 function renderResult(){
   resultEl.innerHTML="";
   const active=players.filter(p=>p.active);
@@ -158,12 +174,16 @@ function renderResult(){
     header.appendChild(lock);
     wrap.appendChild(header);
 
+    let played=new Set();
+
     set.matches.forEach((m,idx)=>{
 
       const line=document.createElement("div");
 
+      const court=COURTS[idx]||`코트${idx+1}`;
+
       const text=document.createTextNode(
-        `${COURTS[idx]}코트 : ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name}`
+        `${court}코트 : ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name}`
       );
 
       const s1=document.createElement("select");
@@ -191,11 +211,9 @@ function renderResult(){
       line.appendChild(scoreWrap);
 
       wrap.appendChild(line);
-    });
 
-    const played=new Set();
-    set.matches.forEach(m=>{
-      [...m.team1,...m.team2].forEach(p=>played.add(p.name));
+      m.team1.forEach(p=>played.add(p.name));
+      m.team2.forEach(p=>played.add(p.name));
     });
 
     const wait=active.filter(p=>!played.has(p.name));
@@ -210,13 +228,13 @@ function renderResult(){
   renderAnalysis();
 }
 
-/* 🔥 ANALYSIS + 득실 */
+/* ========================= ANALYSIS (득실 포함) ========================= */
 function renderAnalysis(){
 
   let stats={};
 
   players.filter(p=>p.active).forEach(p=>{
-    stats[p.name]={game:0,win:0,lose:0,draw:0};
+    stats[p.name]={game:0,win:0,lose:0};
   });
 
   for(let i=1;i<=5;i++){
@@ -243,8 +261,6 @@ function renderAnalysis(){
       }else if(s2>s1){
         t2.forEach(n=>stats[n].win++);
         t1.forEach(n=>stats[n].lose++);
-      }else{
-        return; // 무승부 제외
       }
     });
   }
@@ -260,7 +276,6 @@ function renderAnalysis(){
     };
   });
 
-  // 🔥 정렬
   arr.sort((a,b)=>{
     if(b.game!==a.game) return b.game-a.game;
     return b.win-a.win;
