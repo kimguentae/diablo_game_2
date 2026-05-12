@@ -50,7 +50,7 @@ h2 {
 }
 
 /* =========================
-   FIXED PAIR
+   FIXED PAIR (완전 통일 핵심)
 ========================= */
 .pairBox {
   display: grid;
@@ -59,28 +59,42 @@ h2 {
   margin-bottom: 10px;
 }
 
-.pairBox select {
+/* selectBox = PLAYER1/2 */
+.selectBox {
   background: #1c1c1c;
   color: #fff;
   border: 1px solid #222;
   border-radius: 6px;
-  font-size: 9px;
-  padding: 6px 2px;
-  height: 34px;
-}
 
-#addPair {
+  font-size: 9px;
+
+  height: 34px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  height: 34px;
-  border: 1px dashed #555;
+
+  user-select: none;
 }
 
-/* =========================
-   PAIR LIST
-========================= */
+/* + 버튼 (완전 동일 높이 보장) */
+#addPair {
+  height: 34px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  line-height: 1;
+
+  border: 1px dashed #555;
+  border-radius: 6px;
+  background: #1c1c1c;
+}
+
+/* PAIR 리스트 */
 .pairItem {
   background: #ffb300;
   color: #000;
