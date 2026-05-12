@@ -22,10 +22,9 @@ const p2=document.getElementById("p2");
 const addPair=document.getElementById("addPair");
 const pairList=document.getElementById("pairList");
 
-/* ================= PLAYER ================= */
+/* PLAYER */
 function renderPlayers(){
   listEl.innerHTML="";
-
   [...players.filter(p=>p.active),...players.filter(p=>!p.active)]
   .forEach(p=>{
     const d=document.createElement("div");
@@ -48,7 +47,7 @@ function renderPlayers(){
   countEl.textContent=players.filter(p=>p.active).length;
 }
 
-/* ================= SELECT ================= */
+/* SELECT */
 function renderSelect(){
   const active=players.filter(p=>p.active);
 
@@ -61,7 +60,7 @@ function renderSelect(){
   });
 }
 
-/* ================= FIXED PAIR ================= */
+/* FIXED PAIR */
 addPair.onclick=()=>{
   const a=p1.value,b=p2.value;
   if(!a||!b||a===b) return;
@@ -86,7 +85,7 @@ function renderPairs(){
   });
 }
 
-/* ================= SET GENERATE ================= */
+/* SET GENERATE */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
@@ -106,7 +105,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     pairs.forEach(p=>{
       const a=active.find(x=>x.name===p[0]);
       const b=active.find(x=>x.name===p[1]);
-
       if(a&&b){
         teams.push([a,b]);
         used.add(a.name);
@@ -133,16 +131,13 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       });
     }
 
-    setStore[setNo]={
-      locked:false,
-      matches
-    };
+    setStore[setNo]={locked:false,matches};
 
     renderResult();
   };
 });
 
-/* ================= RESULT ================= */
+/* RESULT + ANALYSIS */
 function renderResult(){
   resultEl.innerHTML="";
   const active=players.filter(p=>p.active);
@@ -157,9 +152,7 @@ function renderResult(){
     const header=document.createElement("div");
 
     const title=document.createElement("span");
-
-    // 🔥 괄호 제거
-    title.textContent=`${i}SET `;
+    title.textContent=`${i}SET`;
 
     const lock=document.createElement("button");
     lock.className="lockBtn";
@@ -218,15 +211,79 @@ function renderResult(){
     wrap.appendChild(w);
     resultEl.appendChild(wrap);
   }
+
+  renderAnalysis();
 }
 
-/* ================= LOCK ================= */
+/* ANALYSIS */
+function renderAnalysis(){
+  let box=document.getElementById("analysisBox");
+  if(!box){
+    const btn=document.createElement("button");
+    btn.id="analysisBtn";
+    btn.textContent="경기분석";
+
+    box=document.createElement("div");
+    box.id="analysisBox";
+
+    resultEl.parentNode.appendChild(btn);
+    resultEl.parentNode.appendChild(box);
+
+    btn.onclick=()=>{
+      const stats={};
+
+      players.filter(p=>p.active).forEach(p=>{
+        stats[p.name]={game:0,win:0,lose:0,draw:0};
+      });
+
+      for(let i=1;i<=5;i++){
+        const set=setStore[i];
+        if(!set) continue;
+
+        set.matches.forEach(m=>{
+          const s1=m.s1;
+          const s2=m.s2;
+
+          const t1=m.team1.map(p=>p.name);
+          const t2=m.team2.map(p=>p.name);
+
+          const all=[...t1,...t2];
+
+          if(s1===0&&s2===0) return;
+
+          all.forEach(n=>stats[n].game++);
+
+          if(s1>s2){
+            t1.forEach(n=>stats[n].win++);
+            t2.forEach(n=>stats[n].lose++);
+          }else if(s2>s1){
+            t2.forEach(n=>stats[n].win++);
+            t1.forEach(n=>stats[n].lose++);
+          }else{
+            all.forEach(n=>stats[n].draw++);
+          }
+        });
+      }
+
+      let html="";
+      Object.keys(stats).forEach(n=>{
+        const s=stats[n];
+        if(s.game>0)
+          html+=`${n} : ${s.game}게임 (${s.win}승 ${s.draw}무 ${s.lose}패)<br>`;
+      });
+
+      box.innerHTML=html;
+    };
+  }
+}
+
+/* LOCK */
 function toggleLock(i){
   setStore[i].locked=!setStore[i].locked;
   renderResult();
 }
 
-/* ================= UTIL ================= */
+/* UTIL */
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -234,7 +291,7 @@ function shuffle(a){
   }
 }
 
-/* ================= INIT ================= */
+/* INIT */
 function renderAll(){
   renderPlayers();
   renderSelect();
