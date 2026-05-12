@@ -9,8 +9,8 @@ const names = [
 ];
 
 const players = names.map(n => ({
-  name: n,
-  active: false
+  name:n,
+  active:false
 }));
 
 let pairs = [];
@@ -88,7 +88,7 @@ function renderSelect(){
 }
 
 /* =========================
-   PAIR
+   FIXED PAIR
 ========================= */
 addPair.onclick = ()=>{
   const a = p1.value;
@@ -96,7 +96,7 @@ addPair.onclick = ()=>{
 
   if(!a || !b || a === b) return;
 
-  if(pairs.some(p => p.includes(a) || p.includes(b))) return;
+  if(pairs.some(x => x.includes(a) || x.includes(b))) return;
 
   pairs.push([a,b]);
 
@@ -124,7 +124,7 @@ function renderPairs(){
 }
 
 /* =========================
-   🔥 GAME (최종 안정 구조)
+   GAME (완전 안정 구조)
 ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
@@ -140,48 +140,46 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used = new Set();
     let teams = [];
 
-    // 1️⃣ FIXED PAIR → 팀 생성
+    // 1. FIXED PAIR → 팀
     pairs.forEach(p=>{
       const a = active.find(x=>x.name === p[0]);
       const b = active.find(x=>x.name === p[1]);
 
       if(a && b){
-        teams.push([a, b]);
+        teams.push([a,b]);
         used.add(a.name);
         used.add(b.name);
       }
     });
 
-    // 2️⃣ 나머지 → 팀 생성
+    // 2. 나머지 → 팀 생성
     let rest = active.filter(p => !used.has(p.name));
     shuffle(rest);
 
     let soloTeams = [];
-
     for(let i=0;i<rest.length;i+=2){
       if(rest[i+1]){
         soloTeams.push([rest[i], rest[i+1]]);
       }
     }
 
-    // 3️⃣ 전체 팀 합치기
     let allTeams = [...teams, ...soloTeams];
 
-    // ⭐ 핵심: 팀 자체 섞기 (이게 상대 고정 방지 핵심)
+    // ⭐ 핵심: 팀 자체를 섞어야 고정 상대 방지
     shuffle(allTeams);
 
-    // 4️⃣ 팀 vs 팀 매칭
+    // 3. 팀 vs 팀
     let matches = [];
 
     for(let i=0;i<allTeams.length;i+=2){
-      const teamA = allTeams[i];
-      const teamB = allTeams[i+1];
+      const t1 = allTeams[i];
+      const t2 = allTeams[i+1];
 
-      if(!teamA || !teamB) continue;
+      if(!t1 || !t2) continue;
 
       matches.push([
-        teamA[0], teamA[1],
-        teamB[0], teamB[1]
+        t1[0], t1[1],
+        t2[0], t2[1]
       ]);
     }
 
@@ -191,7 +189,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 });
 
 /* =========================
-   RESULT
+   RESULT + 대기자
 ========================= */
 function renderResult(){
   resultEl.innerHTML = "";
@@ -211,10 +209,33 @@ function renderResult(){
 
     resultEl.appendChild(div);
   }
+
+  const waiting = players
+    .filter(p=>p.active)
+    .filter(p=>!isInGame(p.name));
+
+  if(waiting.length){
+    const div = document.createElement("div");
+    div.className = "result-set";
+    div.innerHTML = "대기 : " + waiting.map(p=>p.name).join(" ");
+    resultEl.appendChild(div);
+  }
+}
+
+function isInGame(name){
+  for(let i=1;i<=5;i++){
+    const data = setStore[i];
+    if(!data) continue;
+
+    for(const m of data){
+      if(m.some(p => p.name === name)) return true;
+    }
+  }
+  return false;
 }
 
 /* =========================
-   shuffle
+   UTIL
 ========================= */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
