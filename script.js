@@ -15,10 +15,9 @@ const players = names.map(n => ({
 
 let pairs = [];
 
-// SET 저장 (matches + waiting)
-const setStore = {1:null,2:null,3:null,4:null,5:null};
+// 🔥 핵심: 대기자 누적 변수 1개
+let carryOver = [];
 
-/* ================= DOM ================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -117,22 +116,17 @@ function renderPairs(){
   });
 }
 
-/* ================= GAME (🔥 핵심) ================= */
+/* ================= GAME ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
 
-    const setNo = Number(btn.dataset.set);
-
-    // 현재 active
     let active = players.filter(p=>p.active);
 
-    // 🔥 이전 SET 대기자 무조건 합류
-    if(setNo > 1 && setStore[setNo-1]){
-      active = active.concat(setStore[setNo-1].waiting || []);
-    }
+    // 🔥 이전 대기자 무조건 합류
+    active = [...active, ...carryOver];
 
     // 중복 제거
-    active = [...new Map(active.map(p => [p.name,p])).values()];
+    active = [...new Map(active.map(p=>[p.name,p])).values()];
 
     if(active.length < 4){
       alert("인원 부족");
@@ -142,7 +136,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used = new Set();
     let teams = [];
 
-    // fixed pair
     pairs.forEach(([a,b])=>{
       const pa = active.find(p=>p.name===a);
       const pb = active.find(p=>p.name===b);
@@ -180,19 +173,13 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     }
 
-    // 🔥 played / waiting
     let played = new Set();
-
     matches.forEach(m=>{
       m.forEach(p=>played.add(p.name));
     });
 
-    let waiting = active.filter(p=>!played.has(p.name));
-
-    setStore[setNo] = {
-      matches,
-      waiting
-    };
+    // 🔥 다음 SET으로 넘길 대기자
+    carryOver = active.filter(p=>!played.has(p.name));
 
     renderResult();
   };
@@ -202,24 +189,16 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 function renderResult(){
   resultEl.innerHTML = "";
 
-  for(let i=1;i<=5;i++){
-    const data = setStore[i];
-    if(!data) continue;
+  const div = document.createElement("div");
+  div.className = "result-set";
 
-    const div = document.createElement("div");
-    div.className = "result-set";
+  div.innerHTML = `
+    <b>GAME RESULT</b><br><br>
+    (현재 SET 기준)<br>
+    대기 : ${carryOver.map(p=>p.name).join(" ")}
+  `;
 
-    let html = `(${i}SET)<br>`;
-
-    data.matches.forEach((m,idx)=>{
-      html += `${COURTS[idx]}코트: ${m[0].name} ${m[1].name} vs ${m[2].name} ${m[3].name}<br>`;
-    });
-
-    html += `<br>대기 : ${(data.waiting||[]).map(p=>p.name).join(" ")}`;
-
-    div.innerHTML = html;
-    resultEl.appendChild(div);
-  }
+  resultEl.appendChild(div);
 }
 
 /* ================= UTIL ================= */
@@ -235,7 +214,6 @@ function renderAll(){
   renderPlayers();
   renderSelect();
   renderPairs();
-  renderResult();
 }
 
 renderAll();
