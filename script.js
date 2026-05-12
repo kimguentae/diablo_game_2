@@ -18,7 +18,7 @@ const pairList = document.getElementById("pairList");
 let pairs = [];
 
 /* =========================
-   PLAYER
+   PLAYER 렌더
 ========================= */
 function renderPlayers(){
   listEl.innerHTML = "";
@@ -26,7 +26,7 @@ function renderPlayers(){
   players.forEach(p=>{
     const div = document.createElement("div");
     div.className = "player" + (p.active ? " active" : "");
-    div.innerText = p.name;
+    div.textContent = p.name;
 
     div.onclick = ()=>{
       p.active = !p.active;
@@ -37,7 +37,7 @@ function renderPlayers(){
     listEl.appendChild(div);
   });
 
-  countEl.innerText = players.filter(p=>p.active).length;
+  countEl.textContent = players.filter(p=>p.active).length;
 }
 
 renderPlayers();
@@ -51,6 +51,17 @@ function renderSelect(){
 
   p1Sel.innerHTML = "";
   p2Sel.innerHTML = "";
+
+  const opt1 = document.createElement("option");
+  opt1.textContent = "PLAYER 1";
+  opt1.value = "";
+
+  const opt2 = document.createElement("option");
+  opt2.textContent = "PLAYER 2";
+  opt2.value = "";
+
+  p1Sel.appendChild(opt1);
+  p2Sel.appendChild(opt2);
 
   active.forEach(p=>{
     const o1 = document.createElement("option");
@@ -67,17 +78,24 @@ function renderSelect(){
 /* =========================
    PAIR 생성 (+ 버튼)
 ========================= */
-addPairBtn.onclick = ()=>{
+addPairBtn.onclick = () => {
   const a = p1Sel.value;
   const b = p2Sel.value;
 
-  if(!a || !b || a === b) return;
+  if(!a || !b || a === b){
+    alert("두 명을 선택하세요");
+    return;
+  }
 
   const id = Date.now();
-  pairs.push({id, a, b});
+  pairs.push({ id, a, b });
+
   renderPairs();
 };
 
+/* =========================
+   PAIR 삭제 (클릭)
+========================= */
 function renderPairs(){
   pairList.innerHTML = "";
 
@@ -86,8 +104,7 @@ function renderPairs(){
     div.className = "pair";
     div.textContent = `PAIR: ${p.a} + ${p.b}`;
 
-    // 클릭 삭제
-    div.onclick = ()=>{
+    div.onclick = () => {
       pairs = pairs.filter(x => x.id !== p.id);
       renderPairs();
     };
