@@ -17,19 +17,19 @@ let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
 /* ELEMENT */
-const listEl = document.getElementById("playerList");
-const countEl = document.getElementById("count");
-const resultEl = document.getElementById("result");
-const p1 = document.getElementById("p1");
-const p2 = document.getElementById("p2");
-const addPair = document.getElementById("addPair");
-const pairList = document.getElementById("pairList");
+const listEl=document.getElementById("playerList");
+const countEl=document.getElementById("count");
+const resultEl=document.getElementById("result");
+const p1=document.getElementById("p1");
+const p2=document.getElementById("p2");
+const addPair=document.getElementById("addPair");
+const pairList=document.getElementById("pairList");
 
 /* PLAYER */
 function renderPlayers(){
-  listEl.innerHTML = "";
+  listEl.innerHTML="";
 
-  [...players.filter(p=>p.active), ...players.filter(p=>!p.active)]
+  [...players.filter(p=>p.active),...players.filter(p=>!p.active)]
   .forEach(p=>{
     const d=document.createElement("div");
     d.className="player"+(p.active?" active":"");
@@ -48,12 +48,12 @@ function renderPlayers(){
   };
   listEl.appendChild(g);
 
-  countEl.textContent = players.filter(p=>p.active).length;
+  countEl.textContent=players.filter(p=>p.active).length;
 }
 
 /* SELECT */
 function renderSelect(){
-  const active = players.filter(p=>p.active);
+  const active=players.filter(p=>p.active);
 
   p1.innerHTML='<option value="">P1</option>';
   p2.innerHTML='<option value="">P2</option>';
@@ -140,7 +140,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* RESULT */
+/* RESULT (핵심 안정 DOM 방식) */
 function renderResult(){
   resultEl.innerHTML="";
   const activePlayers=players.filter(p=>p.active);
@@ -149,26 +149,55 @@ function renderResult(){
     const set=setStore[i];
     if(!set) continue;
 
-    const div=document.createElement("div");
-    div.className="result-set";
+    const wrap=document.createElement("div");
+    wrap.className="result-set";
+    if(set.locked) wrap.classList.add("locked");
 
-    if(set.locked) div.classList.add("locked");
+    const title=document.createElement("div");
+    title.innerHTML=`(${i}SET) `;
 
-    let html=`(${i}SET) 
-      <button class="lockBtn" onclick="toggleLock(${i})">
-        ${set.locked?"UNLOCK":"LOCK"}
-      </button><br><br>`;
+    const btn=document.createElement("button");
+    btn.className="lockBtn";
+    btn.textContent=set.locked?"UNLOCK":"LOCK";
+    btn.onclick=()=>toggleLock(i);
+
+    wrap.appendChild(title);
+    wrap.appendChild(btn);
+    wrap.appendChild(document.createElement("br"));
 
     set.matches.forEach((m,idx)=>{
 
-      html+=`
-      ${COURTS[idx]}코트 
-      ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name}
+      const line=document.createElement("div");
 
-      (${scoreSel(m.s1,i,idx,'s1')}) : (${scoreSel(m.s2,i,idx,'s2')})
-      <br><br>
-      `;
+      const text=document.createElement("span");
+      text.textContent=
+        `${COURTS[idx]}코트 ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name}`;
 
+      const s1=document.createElement("select");
+      const s2=document.createElement("select");
+
+      for(let k=0;k<=6;k++){
+        s1.appendChild(new Option(k,k));
+        s2.appendChild(new Option(k,k));
+      }
+
+      s1.value=m.s1;
+      s2.value=m.s2;
+
+      s1.disabled=set.locked;
+      s2.disabled=set.locked;
+
+      s1.onchange=()=>m.s1=Number(s1.value);
+      s2.onchange=()=>m.s2=Number(s2.value);
+
+      line.appendChild(text);
+      line.appendChild(document.createTextNode(" ( "));
+      line.appendChild(s1);
+      line.appendChild(document.createTextNode(" ) : ( "));
+      line.appendChild(s2);
+      line.appendChild(document.createTextNode(" )"));
+
+      wrap.appendChild(line);
     });
 
     const played=new Set();
@@ -177,31 +206,16 @@ function renderResult(){
     });
 
     const wait=activePlayers.filter(p=>!played.has(p.name));
-    html+=`대기 : ${wait.map(p=>p.name).join(" ")}`;
 
-    div.innerHTML=html;
-    resultEl.appendChild(div);
+    const w=document.createElement("div");
+    w.textContent="대기 : "+wait.map(p=>p.name).join(" ");
+
+    wrap.appendChild(w);
+    resultEl.appendChild(wrap);
   }
 }
 
-/* SCORE UI */
-function scoreSel(val,setNo,idx,key){
-  let s=`<select class="scoreSelect"
-    onchange="setScore(${setNo},${idx},'${key}',this.value)"
-    ${setStore[setNo]?.locked?"disabled":""}>`;
-
-  for(let i=0;i<=6;i++){
-    s+=`<option value="${i}" ${i==val?"selected":""}>${i}</option>`;
-  }
-
-  return s+"</select>";
-}
-
-function setScore(setNo,idx,key,val){
-  setStore[setNo].matches[idx][key]=Number(val);
-}
-
-/* LOCK TOGGLE */
+/* LOCK */
 function toggleLock(setNo){
   setStore[setNo].locked=!setStore[setNo].locked;
   renderResult();
