@@ -63,12 +63,17 @@ function renderSelect(){
 
 /* ================= FIXED PAIR ================= */
 addPair.onclick=()=>{
-  const a=p1.value,b=p2.value;
+  const a=p1.value;
+  const b=p2.value;
+
   if(!a||!b||a===b) return;
   if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
 
   pairs.push([a,b]);
-  p1.value=p2.value="";
+
+  p1.value="";
+  p2.value="";
+
   renderAll();
 };
 
@@ -78,22 +83,24 @@ function renderPairs(){
     const d=document.createElement("div");
     d.className="pairItem";
     d.textContent=`PAIR ${i+1}: ${p[0]} ${p[1]}`;
+
     d.onclick=()=>{
       pairs=pairs.filter(x=>x!==p);
       renderAll();
     };
+
     pairList.appendChild(d);
   });
 }
 
-/* ================= SET GENERATE ================= */
+/* ================= SET GENERATION ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
     const setNo=btn.dataset.set;
 
+    /* 🔒 LOCK */
     if(setStore[setNo]?.locked){
-      alert("LOCK 상태입니다");
       return;
     }
 
@@ -103,6 +110,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used=new Set();
     let teams=[];
 
+    /* 고정 페어 */
     pairs.forEach(p=>{
       const a=active.find(x=>x.name===p[0]);
       const b=active.find(x=>x.name===p[1]);
@@ -114,20 +122,32 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
+    /* 나머지 */
     let rest=active.filter(p=>!used.has(p.name));
     shuffle(rest);
 
     for(let i=0;i<rest.length;i+=2){
-      if(rest[i+1]) teams.push([rest[i],rest[i+1]]);
+      if(rest[i+1]){
+        teams.push([rest[i],rest[i+1]]);
+      }
     }
 
     shuffle(teams);
 
+    /* 🔥 핵심: 3코트 제한 + 가능한 만큼만 */
     let matches=[];
-    for(let i=0;i<Math.min(COURTS.length,teams.length/2);i++){
+
+    const maxMatches = Math.min(3, Math.floor(teams.length / 2));
+
+    for(let i=0;i<maxMatches;i++){
+      const t1=teams[i*2];
+      const t2=teams[i*2+1];
+
+      if(!t1||!t2) continue;
+
       matches.push({
-        team1:teams[i*2],
-        team2:teams[i*2+1],
+        team1:t1,
+        team2:t2,
         s1:0,
         s2:0
       });
@@ -145,9 +165,11 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 /* ================= RESULT ================= */
 function renderResult(){
   resultEl.innerHTML="";
+
   const active=players.filter(p=>p.active);
 
   for(let i=1;i<=5;i++){
+
     const set=setStore[i];
     if(!set) continue;
 
@@ -157,12 +179,9 @@ function renderResult(){
     const header=document.createElement("div");
 
     const title=document.createElement("span");
-
-    // 🔥 괄호 제거
-    title.textContent=`${i}SET `;
+    title.textContent=`${i}SET`;
 
     const lock=document.createElement("button");
-    lock.className="lockBtn";
     lock.textContent=set.locked?"🔒":"🔓";
     lock.onclick=()=>toggleLock(i);
 
@@ -192,15 +211,13 @@ function renderResult(){
       s1.onchange=()=>m.s1=+s1.value;
       s2.onchange=()=>m.s2=+s2.value;
 
-      const scoreWrap=document.createElement("span");
-      scoreWrap.className="scoreWrap";
-
-      scoreWrap.appendChild(s1);
-      scoreWrap.appendChild(document.createTextNode(" : "));
-      scoreWrap.appendChild(s2);
+      const score=document.createElement("span");
+      score.appendChild(s1);
+      score.appendChild(document.createTextNode(" : "));
+      score.appendChild(s2);
 
       line.appendChild(text);
-      line.appendChild(scoreWrap);
+      line.appendChild(score);
 
       wrap.appendChild(line);
     });
