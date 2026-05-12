@@ -17,7 +17,7 @@ h2 {
 }
 
 /* =========================
-   5열 PLAYER
+   PLAYER 5열
 ========================= */
 #playerList {
   display: grid;
@@ -25,9 +25,6 @@ h2 {
   gap: 5px;
 }
 
-/* =========================
-   PLAYER 카드 + 눌림 효과
-========================= */
 .player {
   background: #1c1c1c;
   border-radius: 6px;
@@ -35,33 +32,63 @@ h2 {
   text-align: center;
   padding: 8px 2px;
   border: 1px solid #222;
-
   user-select: none;
-
-  /* 🔥 핵심: 눌림 애니메이션 */
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
-  -webkit-tap-highlight-color: transparent;
+  transition: 0.1s;
 }
 
 .player:active {
   transform: scale(0.92);
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
 }
 
-/* 선택 상태 */
 .player.active {
   background: #00c853;
   color: #000;
 }
 
-/* 게스트 */
+/* 게스트 + */
 .player.guest {
   border: 1px dashed #555;
-  color: #888;
+  color: #aaa;
 }
 
 /* =========================
-   GAME 버튼
+   FIXED PAIR
+========================= */
+.pairBox {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.pairBox select {
+  background: #1c1c1c;
+  color: #fff;
+  border: 1px solid #222;
+  border-radius: 6px;
+  font-size: 10px;
+  padding: 8px 2px;
+}
+
+#addPair {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* PAIR 리스트 */
+#pairList .pairItem {
+  background: #ffb300;
+  color: #000;
+  font-size: 10px;
+  padding: 6px;
+  border-radius: 6px;
+  margin-top: 5px;
+}
+
+/* =========================
+   GAME
 ========================= */
 .btnRow {
   display: grid;
