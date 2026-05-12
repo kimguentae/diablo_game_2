@@ -13,89 +13,111 @@ const players = names.map(n => ({
   active: false
 }));
 
-const listEl = document.getElementById("playerList");
-const resultEl = document.getElementById("result");
-const countEl = document.getElementById("count");
-
+let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
+
+/* =========================
+   ELEMENT
+========================= */
+const listEl = document.getElementById("playerList");
+const countEl = document.getElementById("count");
+const resultEl = document.getElementById("result");
+
+const p1 = document.getElementById("p1");
+const p2 = document.getElementById("p2");
+const addPairBtn = document.getElementById("addPair");
+const pairList = document.getElementById("pairList");
 
 /* =========================
    PLAYER
 ========================= */
-function updateCount(){
-  countEl.innerText = players.filter(p=>p.active).length;
-}
-
-players.forEach(p=>{
-  const div = document.createElement("div");
-  div.className = "player";
-  div.innerText = p.name;
-
-  div.onclick = ()=>{
-    p.active = !p.active;
-    div.classList.toggle("active");
-    updateCount();
-
-    reorder();
-  };
-
-  listEl.appendChild(div);
-});
-
-/* =========================
-   GUEST (+)
-========================= */
-const guest = document.createElement("div");
-guest.className = "player guest";
-guest.innerText = "+";
-
-guest.onclick = ()=>{
-  const name = prompt("GUEST NAME");
-  if(!name) return;
-
-  const p = {name, active:true};
-  players.push(p);
-
-  const div = document.createElement("div");
-  div.className = "player active";
-  div.innerText = name;
-
-  div.onclick = ()=>{
-    p.active = !p.active;
-    div.classList.toggle("active");
-    updateCount();
-    reorder();
-  };
-
-  listEl.appendChild(div);
-  updateCount();
-  reorder();
-};
-
-listEl.appendChild(guest);
-
-/* =========================
-   선택자 상단 정렬
-========================= */
-function reorder(){
-  const active = [];
-  const inactive = [];
-
-  players.forEach(p=>{
-    const el = Array.from(listEl.children)
-      .find(d => d.innerText === p.name);
-
-    if(!el) return;
-
-    if(p.active) active.push(el);
-    else inactive.push(el);
-  });
-
+function renderPlayers(){
   listEl.innerHTML = "";
 
-  active.forEach(el => listEl.appendChild(el));
-  inactive.forEach(el => listEl.appendChild(el));
-  listEl.appendChild(guest);
+  let sorted = [
+    ...players.filter(p=>p.active),
+    ...players.filter(p=>!p.active)
+  ];
+
+  sorted.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "player" + (p.active ? " active" : "");
+    div.textContent = p.name;
+
+    div.onclick = ()=>{
+      p.active = !p.active;
+      renderAll();
+    };
+
+    listEl.appendChild(div);
+  });
+
+  countEl.textContent = players.filter(p=>p.active).length;
+}
+
+/* =========================
+   FIXED PAIR SELECT
+========================= */
+function renderPairSelect(){
+  const active = players.filter(p=>p.active);
+
+  p1.innerHTML = "";
+  p2.innerHTML = "";
+
+  const o1 = document.createElement("option");
+  o1.value = "";
+  o1.textContent = "PLAYER 1";
+
+  const o2 = document.createElement("option");
+  o2.value = "";
+  o2.textContent = "PLAYER 2";
+
+  p1.appendChild(o1);
+  p2.appendChild(o2);
+
+  active.forEach(p=>{
+    const a = document.createElement("option");
+    const b = document.createElement("option");
+
+    a.value = b.value = p.name;
+    a.textContent = b.textContent = p.name;
+
+    p1.appendChild(a);
+    p2.appendChild(b);
+  });
+}
+
+/* =========================
+   PAIR 생성
+========================= */
+addPairBtn.onclick = ()=>{
+  const a = p1.value;
+  const b = p2.value;
+
+  if(!a || !b || a === b) return;
+
+  pairs.push([a,b]);
+  renderPairs();
+};
+
+/* =========================
+   PAIR 출력
+========================= */
+function renderPairs(){
+  pairList.innerHTML = "";
+
+  pairs.forEach((p,i)=>{
+    const div = document.createElement("div");
+    div.className = "pairItem";
+    div.textContent = `PAIR ${i+1} : ${p[0]} ${p[1]}`;
+
+    div.onclick = ()=>{
+      pairs = pairs.filter(x=>x!==p);
+      renderPairs();
+    };
+
+    pairList.appendChild(div);
+  });
 }
 
 /* =========================
@@ -104,43 +126,34 @@ function reorder(){
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
 
-    const setNo = +btn.dataset.set;
-    const available = players.filter(p=>p.active);
+    const setNo = btn.dataset.set;
+    let active = players.filter(p=>p.active);
 
-    if(available.length < 4){
+    if(active.length < 4){
       alert("인원 부족");
       return;
     }
 
-    let pool = [...available];
+    let pool = [...active];
     shuffle(pool);
 
-    let used = new Set();
     let matches = [];
 
     for(let i=0;i<COURTS.length;i++){
-      let team = [];
+      if(pool.length < 4) break;
 
-      while(team.length<4 && pool.length){
-        const p = pool.shift();
-        if(!used.has(p.name)){
-          used.add(p.name);
-          team.push(p);
-        }
-      }
-
-      if(team.length===4) matches.push(team);
+      matches.push(pool.splice(0,4));
     }
 
     setStore[setNo] = matches;
-    render();
+    renderResult();
   };
 });
 
 /* =========================
    RESULT
 ========================= */
-function render(){
+function renderResult(){
   resultEl.innerHTML = "";
 
   for(let s=1;s<=5;s++){
@@ -151,7 +164,7 @@ function render(){
     div.className = "result-set";
 
     div.innerHTML =
-      `(${s})<br>` +
+      `(${s}SET)<br>` +
       data.map((t,i)=>
         `${COURTS[i]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}`
       ).join("<br>");
@@ -161,7 +174,7 @@ function render(){
 }
 
 /* =========================
-   shuffle
+   SHUFFLE
 ========================= */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
@@ -169,3 +182,14 @@ function shuffle(arr){
     [arr[i],arr[j]]=[arr[j],arr[i]];
   }
 }
+
+/* =========================
+   INIT
+========================= */
+function renderAll(){
+  renderPlayers();
+  renderPairSelect();
+  renderPairs();
+}
+
+renderAll();
