@@ -70,35 +70,51 @@ function renderPlayers(){
 }
 
 /* =========================
-   🔥 FIXED PAIR 핵심 로직
+   FIXED PAIR SAFE SELECT
 ========================= */
-function getUsedNames(){
-  const used = new Set();
+function getUsed(){
+  const set = new Set();
   pairs.forEach(p=>{
-    used.add(p[0]);
-    used.add(p[1]);
+    set.add(p[0]);
+    set.add(p[1]);
   });
-  return used;
+  return set;
 }
 
 function renderSelect(){
 
-  const used = getUsedNames();
+  const used = getUsed();
+  const active = players.filter(p=>p.active);
 
   const selected1 = p1.value;
   const selected2 = p2.value;
 
-  const active = players.filter(p=>p.active && !used.has(p.name));
+  // 최초 1회만 생성
+  if(p1.options.length === 0){
+    p1.innerHTML = `<option value="">PLAYER1</option>`;
+    p2.innerHTML = `<option value="">PLAYER2</option>`;
 
-  p1.innerHTML = "";
-  p2.innerHTML = "";
+    active.forEach(p=>{
+      p1.appendChild(new Option(p.name,p.name));
+      p2.appendChild(new Option(p.name,p.name));
+    });
+  }
 
-  p1.appendChild(new Option("PLAYER1",""));
-  p2.appendChild(new Option("PLAYER2",""));
+  // disabled 처리 (핵심)
+  Array.from(p1.options).forEach(opt=>{
+    if(!opt.value) return;
 
-  active.forEach(p=>{
-    if(p.name !== selected2) p1.appendChild(new Option(p.name,p.name));
-    if(p.name !== selected1) p2.appendChild(new Option(p.name,p.name));
+    opt.disabled =
+      used.has(opt.value) ||
+      opt.value === selected2;
+  });
+
+  Array.from(p2.options).forEach(opt=>{
+    if(!opt.value) return;
+
+    opt.disabled =
+      used.has(opt.value) ||
+      opt.value === selected1;
   });
 
   p1.value = selected1;
@@ -193,7 +209,9 @@ function renderResult(){
   }
 }
 
-/* shuffle */
+/* =========================
+   shuffle
+========================= */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -201,7 +219,9 @@ function shuffle(arr){
   }
 }
 
-/* INIT */
+/* =========================
+   INIT
+========================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
