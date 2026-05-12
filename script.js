@@ -8,7 +8,11 @@ const names = [
   "이명진","전유준","성제현","장이현"
 ];
 
-const players = names.map(n => ({ name:n, active:false }));
+const players = names.map(n => ({
+  name:n,
+  active:false
+}));
+
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
@@ -23,32 +27,43 @@ const pairList = document.getElementById("pairList");
 /* PLAYER */
 function renderPlayers(){
   listEl.innerHTML = "";
-  [...players.filter(p=>p.active), ...players.filter(p=>!p.active)]
-  .forEach(p=>{
-    const d=document.createElement("div");
-    d.className="player"+(p.active?" active":"");
-    d.textContent=p.name;
-    d.onclick=()=>{p.active=!p.active;renderAll();};
-    listEl.appendChild(d);
+
+  const sorted = [
+    ...players.filter(p=>p.active),
+    ...players.filter(p=>!p.active)
+  ];
+
+  sorted.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "player" + (p.active ? " active" : "");
+    div.textContent = p.name;
+    div.onclick = ()=>{
+      p.active = !p.active;
+      renderAll();
+    };
+    listEl.appendChild(div);
   });
 
-  const g=document.createElement("div");
-  g.className="player guest";
-  g.textContent="+";
-  g.onclick=()=>{
-    const n=prompt("GUEST NAME");
-    if(n){players.push({name:n,active:true});renderAll();}
+  const guest = document.createElement("div");
+  guest.className = "player guest";
+  guest.textContent = "+";
+  guest.onclick = ()=>{
+    const name = prompt("GUEST NAME");
+    if(name){
+      players.push({name, active:true});
+      renderAll();
+    }
   };
-  listEl.appendChild(g);
+  listEl.appendChild(guest);
 
-  countEl.textContent=players.filter(p=>p.active).length;
+  countEl.textContent = players.filter(p=>p.active).length;
 }
 
 /* SELECT */
 function renderSelect(){
-  const active=players.filter(p=>p.active);
-  p1.innerHTML='<option value="">PLAYER1</option>';
-  p2.innerHTML='<option value="">PLAYER2</option>';
+  const active = players.filter(p=>p.active);
+  p1.innerHTML = '<option value="">PLAYER1</option>';
+  p2.innerHTML = '<option value="">PLAYER2</option>';
   active.forEach(p=>{
     p1.appendChild(new Option(p.name,p.name));
     p2.appendChild(new Option(p.name,p.name));
@@ -56,105 +71,102 @@ function renderSelect(){
 }
 
 /* FIXED PAIR */
-addPair.onclick=()=>{
-  if(!p1.value||!p2.value||p1.value===p2.value) return;
+addPair.onclick = ()=>{
+  if(!p1.value || !p2.value || p1.value === p2.value) return;
   if(pairs.some(x=>x.includes(p1.value)||x.includes(p2.value))) return;
   pairs.push([p1.value,p2.value]);
-  p1.value=p2.value="";
+  p1.value = p2.value = "";
   renderAll();
 };
 
 function renderPairs(){
-  pairList.innerHTML="";
+  pairList.innerHTML = "";
   pairs.forEach((p,i)=>{
-    const d=document.createElement("div");
-    d.className="pairItem";
-    d.textContent=`PAIR ${i+1} : ${p[0]} ${p[1]}`;
-    d.onclick=()=>{pairs=pairs.filter(x=>x!==p);renderAll();};
-    pairList.appendChild(d);
+    const div = document.createElement("div");
+    div.className = "pairItem";
+    div.textContent = `PAIR ${i+1} : ${p[0]} ${p[1]}`;
+    div.onclick = ()=>{
+      pairs = pairs.filter(x=>x!==p);
+      renderAll();
+    };
+    pairList.appendChild(div);
   });
 }
 
-/* SET GENERATE */
+/* GAME GENERATE */
 document.querySelectorAll(".genBtn").forEach(btn=>{
-  btn.onclick=()=>{
-    const setNo=btn.dataset.set;
-    const active=players.filter(p=>p.active);
-    if(active.length<4) return alert("인원 부족");
+  btn.onclick = ()=>{
+    const setNo = btn.dataset.set;
+    const active = players.filter(p=>p.active);
+    if(active.length < 4) return alert("인원 부족");
 
-    let used=new Set(), teams=[];
+    let used = new Set();
+    let teams = [];
+
     pairs.forEach(p=>{
-      const a=active.find(x=>x.name===p[0]);
-      const b=active.find(x=>x.name===p[1]);
-      if(a&&b){teams.push([a,b]);used.add(a.name);used.add(b.name);}
+      const a = active.find(x=>x.name===p[0]);
+      const b = active.find(x=>x.name===p[1]);
+      if(a && b){
+        teams.push([a,b]);
+        used.add(a.name);
+        used.add(b.name);
+      }
     });
 
-    let rest=active.filter(p=>!used.has(p.name));
+    let rest = active.filter(p=>!used.has(p.name));
     shuffle(rest);
 
-    let solo=[];
     for(let i=0;i<rest.length;i+=2){
-      if(rest[i+1]) solo.push([rest[i],rest[i+1]]);
+      if(rest[i+1]) teams.push([rest[i],rest[i+1]]);
     }
 
-    let all=[...teams,...solo];
-    shuffle(all);
+    shuffle(teams);
 
-    let matches=[];
-    for(let i=0;i<Math.min(COURTS.length,all.length/2);i++){
-      matches.push({
-        team1:all[i*2],
-        team2:all[i*2+1],
-        s1:"",
-        s2:""
-      });
+    let matches = [];
+    for(let i=0;i<Math.min(COURTS.length, teams.length/2);i++){
+      matches.push([
+        teams[i*2][0], teams[i*2][1],
+        teams[i*2+1][0], teams[i*2+1][1]
+      ]);
     }
 
-    setStore[setNo]=matches;
+    setStore[setNo] = matches;
     renderResult();
   };
 });
 
 /* RESULT */
 function renderResult(){
-  resultEl.innerHTML="";
-  const activePlayers=players.filter(p=>p.active);
+  resultEl.innerHTML = "";
+  const activePlayers = players.filter(p=>p.active);
 
   for(let i=1;i<=5;i++){
-    const data=setStore[i];
+    const data = setStore[i];
     if(!data) continue;
 
-    let played=new Set();
-    let html=`(${i}SET)<br>`;
+    let played = new Set();
+    let html = `(${i}SET)<br>`;
 
     data.forEach((t,idx)=>{
-      html+=`${COURTS[idx]}코트:
-      ${t.team1[0].name} ${t.team1[1].name}
-      <input type="number" min="0" max="6" value="${t.s1}"
-        onchange="setStore[${i}][${idx}].s1=this.value">
-      :
-      <input type="number" min="0" max="6" value="${t.s2}"
-        onchange="setStore[${i}][${idx}].s2=this.value">
-      ${t.team2[0].name} ${t.team2[1].name}<br>`;
-
-      [...t.team1,...t.team2].forEach(p=>played.add(p.name));
+      html += `${COURTS[idx]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
+      t.forEach(p=>played.add(p.name));
     });
 
-    const wait=activePlayers.filter(p=>!played.has(p.name));
-    html+=`<br>대기 : ${wait.map(p=>p.name).join(" ")}`;
+    const waiting = activePlayers.filter(p=>!played.has(p.name));
+    html += `<br>대기 : ${waiting.map(p=>p.name).join(" ")}`;
 
-    const d=document.createElement("div");
-    d.className="result-set";
-    d.innerHTML=html;
-    resultEl.appendChild(d);
+    const div = document.createElement("div");
+    div.className = "result-set";
+    div.innerHTML = html;
+    resultEl.appendChild(div);
   }
 }
 
 /* UTIL */
-function shuffle(a){
-  for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
   }
 }
 
