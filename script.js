@@ -9,8 +9,8 @@ const names = [
 ];
 
 const players = names.map(n => ({
-  name:n,
-  active:false
+  name: n,
+  active: false
 }));
 
 let pairs = [];
@@ -124,7 +124,7 @@ function renderPairs(){
 }
 
 /* =========================
-   🔥 GAME (최종 안정 버전)
+   🔥 GAME (최종 안정 구조)
 ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
@@ -138,33 +138,51 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     }
 
     let used = new Set();
-    let pool = [];
+    let teams = [];
 
-    // 1️⃣ FIXED PAIR → 먼저 팀으로 고정
+    // 1️⃣ FIXED PAIR → 팀 생성
     pairs.forEach(p=>{
       const a = active.find(x=>x.name === p[0]);
       const b = active.find(x=>x.name === p[1]);
 
       if(a && b){
-        pool.push(a, b);
+        teams.push([a, b]);
         used.add(a.name);
         used.add(b.name);
       }
     });
 
-    // 2️⃣ 남은 인원
+    // 2️⃣ 나머지 → 팀 생성
     let rest = active.filter(p => !used.has(p.name));
     shuffle(rest);
 
-    pool.push(...rest);
+    let soloTeams = [];
 
-    // 3️⃣ 4명씩 경기 생성 (팀 섞여서 자연스럽게 매칭)
+    for(let i=0;i<rest.length;i+=2){
+      if(rest[i+1]){
+        soloTeams.push([rest[i], rest[i+1]]);
+      }
+    }
+
+    // 3️⃣ 전체 팀 합치기
+    let allTeams = [...teams, ...soloTeams];
+
+    // ⭐ 핵심: 팀 자체 섞기 (이게 상대 고정 방지 핵심)
+    shuffle(allTeams);
+
+    // 4️⃣ 팀 vs 팀 매칭
     let matches = [];
 
-    for(let i=0;i<pool.length;i+=4){
-      if(pool.slice(i,i+4).length === 4){
-        matches.push(pool.slice(i,i+4));
-      }
+    for(let i=0;i<allTeams.length;i+=2){
+      const teamA = allTeams[i];
+      const teamB = allTeams[i+1];
+
+      if(!teamA || !teamB) continue;
+
+      matches.push([
+        teamA[0], teamA[1],
+        teamB[0], teamB[1]
+      ]);
     }
 
     setStore[setNo] = matches;
@@ -188,14 +206,16 @@ function renderResult(){
     div.innerHTML =
       `(${i}SET)<br>` +
       data.map((t,idx)=>
-        `${COURTS[idx]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}`
+        `${COURTS[idx] || "C"}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}`
       ).join("<br>");
 
     resultEl.appendChild(div);
   }
 }
 
-/* shuffle */
+/* =========================
+   shuffle
+========================= */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -203,7 +223,9 @@ function shuffle(arr){
   }
 }
 
-/* INIT */
+/* =========================
+   INIT
+========================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
