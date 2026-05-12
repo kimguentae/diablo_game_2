@@ -155,7 +155,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let allTeams = [...teams,...solo];
     shuffle(allTeams);
 
-    // 🔥 3코트 고정 = 최대 12명
     let matches = [];
     let maxGames = Math.min(COURTS.length, Math.floor(allTeams.length/2));
 
@@ -176,43 +175,44 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* ========================= RESULT ========================= */
+/* ========================= RESULT (🔥 핵심 수정) ========================= */
 function renderResult(){
 
   resultEl.innerHTML = "";
-
-  let played = new Set();
 
   for(let i=1;i<=5;i++){
     const data = setStore[i];
     if(!data) continue;
 
+    let played = new Set();
+
     const div = document.createElement("div");
     div.className = "result-set";
 
-    div.innerHTML =
-      `(${i}SET)<br>` +
-      data.map((t,idx)=>{
-        played.add(t[0].name);
-        played.add(t[1].name);
-        played.add(t[2].name);
-        played.add(t[3].name);
+    let html = `(${i}SET)<br>`;
 
-        return `${COURTS[idx]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}`;
-      }).join("<br>");
+    data.forEach((t,idx)=>{
 
-    resultEl.appendChild(div);
-  }
+      played.add(t[0].name);
+      played.add(t[1].name);
+      played.add(t[2].name);
+      played.add(t[3].name);
 
-  // 🔥 대기자 (정확 계산)
-  const waiting = players
-    .filter(p=>p.active)
-    .filter(p=>!played.has(p.name));
+      const court = COURTS[idx] || "C";
 
-  if(waiting.length){
-    const div = document.createElement("div");
-    div.className = "result-set";
-    div.innerHTML = "대기 : " + waiting.map(p=>p.name).join(" ");
+      html += `${court}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
+    });
+
+    // 🔥 세트별 대기자
+    const waiting = players
+      .filter(p=>p.active)
+      .filter(p=>!played.has(p.name));
+
+    if(waiting.length){
+      html += `<br>대기 : ${waiting.map(p=>p.name).join(" ")}`;
+    }
+
+    div.innerHTML = html;
     resultEl.appendChild(div);
   }
 }
