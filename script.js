@@ -85,16 +85,11 @@ function renderPairs(){
   });
 }
 
-/* SET GENERATE */
+/* SET */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
     const setNo=btn.dataset.set;
-
-    if(setStore[setNo]?.locked){
-      alert("LOCK 상태입니다");
-      return;
-    }
 
     const active=players.filter(p=>p.active);
     if(active.length<4) return;
@@ -137,7 +132,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* RESULT + ANALYSIS */
+/* RESULT */
 function renderResult(){
   resultEl.innerHTML="";
   const active=players.filter(p=>p.active);
@@ -215,8 +210,9 @@ function renderResult(){
   renderAnalysis();
 }
 
-/* 🔥 ANALYSIS (정렬 핵심) */
+/* 🔥 ANALYSIS + 득실 */
 function renderAnalysis(){
+
   let stats={};
 
   players.filter(p=>p.active).forEach(p=>{
@@ -228,6 +224,7 @@ function renderAnalysis(){
     if(!set) continue;
 
     set.matches.forEach(m=>{
+
       const s1=m.s1;
       const s2=m.s2;
 
@@ -247,7 +244,7 @@ function renderAnalysis(){
         t2.forEach(n=>stats[n].win++);
         t1.forEach(n=>stats[n].lose++);
       }else{
-        all.forEach(n=>stats[n].draw++);
+        return; // 무승부 제외
       }
     });
   }
@@ -258,36 +255,41 @@ function renderAnalysis(){
       name,
       game:s.game,
       win:s.win,
-      draw:s.draw,
-      lose:s.lose
+      lose:s.lose,
+      diff:s.win - s.lose
     };
   });
 
-  // 🔥 핵심 정렬
+  // 🔥 정렬
   arr.sort((a,b)=>{
     if(b.game!==a.game) return b.game-a.game;
     return b.win-a.win;
   });
 
   let html="";
+
   arr.forEach(s=>{
-    if(s.game>0)
-      html+=`${s.name} : ${s.game}게임 (${s.win}승 ${s.draw}무 ${s.lose}패)<br>`;
+    if(s.game===0) return;
+
+    const diff=s.diff>0?`+${s.diff}`:`${s.diff}`;
+
+    html+=`${s.name} : ${s.game}게임 (${s.win}승 ${s.lose}패) / ${diff}<br>`;
   });
 
   let box=document.getElementById("analysisBox");
-  if(!box){
-    box=document.createElement("div");
-    box.id="analysisBox";
 
+  if(!box){
     const btn=document.createElement("button");
     btn.id="analysisBtn";
     btn.textContent="경기분석";
 
-    btn.onclick=()=>{ box.style.display="block"; };
+    box=document.createElement("div");
+    box.id="analysisBox";
 
     resultEl.parentNode.appendChild(btn);
     resultEl.parentNode.appendChild(box);
+
+    btn.onclick=()=>box.style.display="block";
   }
 
   box.innerHTML=html;
