@@ -217,8 +217,13 @@ function renderResult(){
       score.appendChild(document.createTextNode(" : "));
       score.appendChild(s2);
 
-      line.appendChild(text);
-      line.appendChild(score);
+const spacer = document.createElement("span");
+spacer.style.display = "inline-block";
+spacer.style.width = "32px"; // 약 4칸 느낌
+
+line.appendChild(text);
+line.appendChild(spacer);
+line.appendChild(score);
 
       wrap.appendChild(line);
     });
