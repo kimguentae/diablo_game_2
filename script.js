@@ -182,7 +182,8 @@ function renderResult(){
     const title=document.createElement("span");
     title.textContent=`${i}SET`;
 
-    const lock=document.createElement("button");
+    const lock=document.createElementconst lock=document.createElement("button");
+    lock.className="lockBtn";("button");
     lock.textContent=set.locked?"🔒":"🔓";
     lock.onclick=()=>toggleLock(i);
 
