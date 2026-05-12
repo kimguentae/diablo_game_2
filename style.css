@@ -32,22 +32,6 @@ h2 {
   text-align: center;
   padding: 8px 2px;
   border: 1px solid #222;
-  user-select: none;
-  transition: 0.1s;
-}
-
-.player:active {
-  transform: scale(0.92);
-}
-
-.player.active {
-  background: #00c853;
-  color: #000;
-}
-
-.player.guest {
-  border: 1px dashed #555;
-  color: #888;
 }
 
 /* =========================
@@ -59,25 +43,24 @@ h2 {
   margin-bottom: 6px;
 }
 
-/* 휠(select) */
+/* 🔥 PLAYER랑 동일 사이즈 */
 select {
   flex: 1;
-  font-size: 12px;
+  font-size: 10px;
   background: #111;
   color: #fff;
   border: 1px solid #333;
   border-radius: 6px;
-  padding: 6px;
+  padding: 8px 2px;
 }
 
-/* + 버튼 (PLAYER +랑 동일 컨셉) */
+/* + 버튼 */
 .guest {
   width: 40px;
   text-align: center;
   font-size: 14px;
   background: #1c1c1c;
   border-radius: 6px;
-  padding: 8px 0;
   border: 1px dashed #555;
 }
 
@@ -91,9 +74,7 @@ select {
   margin-top: 5px;
 }
 
-/* =========================
-   GAME
-========================= */
+/* GAME */
 .btnRow {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
