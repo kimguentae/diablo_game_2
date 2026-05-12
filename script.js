@@ -29,7 +29,7 @@ const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
 /* =========================
-   PLAYER + GUEST
+   PLAYER RENDER
 ========================= */
 function renderPlayers(){
   listEl.innerHTML = "";
@@ -70,10 +70,27 @@ function renderPlayers(){
 }
 
 /* =========================
-   SELECT
+   🔥 FIXED PAIR SELECT (핵심 수정)
 ========================= */
+function getAvailablePlayers(){
+  // active + 아직 pair 안된 사람
+  const used = new Set();
+
+  pairs.forEach(p=>{
+    used.add(p[0]);
+    used.add(p[1]);
+  });
+
+  return players.filter(p => p.active && !used.has(p.name));
+}
+
+/* PLAYER1 / PLAYER2 서로 제외 */
 function renderSelect(){
-  const active = players.filter(p=>p.active);
+  const available1 = getAvailablePlayers();
+  const available2 = getAvailablePlayers();
+
+  const val1 = p1.value;
+  const val2 = p2.value;
 
   p1.innerHTML = "";
   p2.innerHTML = "";
@@ -81,14 +98,22 @@ function renderSelect(){
   p1.appendChild(new Option("PLAYER1",""));
   p2.appendChild(new Option("PLAYER2",""));
 
-  active.forEach(p=>{
+  available1.forEach(p=>{
     p1.appendChild(new Option(p.name,p.name));
-    p2.appendChild(new Option(p.name,p.name));
   });
+
+  available2.forEach(p=>{
+    if(p.name !== p1.value) {
+      p2.appendChild(new Option(p.name,p.name));
+    }
+  });
+
+  p1.value = val1;
+  p2.value = val2;
 }
 
 /* =========================
-   PAIR
+   PAIR 생성
 ========================= */
 addPair.onclick = ()=>{
   const a = p1.value;
@@ -96,8 +121,14 @@ addPair.onclick = ()=>{
 
   if(!a || !b || a===b) return;
 
+  // 🔥 중복 방지
+  if(pairs.some(p => p.includes(a) || p.includes(b))) return;
+
   pairs.push([a,b]);
-  renderPairs();
+  p1.value = "";
+  p2.value = "";
+
+  renderAll();
 };
 
 function renderPairs(){
