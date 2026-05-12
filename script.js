@@ -157,6 +157,8 @@ function renderResult(){
     const header=document.createElement("div");
 
     const title=document.createElement("span");
+
+    // 🔥 괄호 제거
     title.textContent=`${i}SET `;
 
     const lock=document.createElement("button");
