@@ -48,6 +48,7 @@ h2 {
   display: grid;
   grid-template-columns: 1fr 1fr 0.4fr;
   gap: 4px;
+  margin-bottom: 10px;
 }
 
 .pairBox select {
@@ -58,13 +59,20 @@ h2 {
   font-size: 9px;
   height: 34px;
   text-align: center;
+  box-sizing: border-box;
 }
 
+/* 🔥 + 버튼 높이 통일 */
 #addPair {
   height: 34px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px dashed #555;
+  border-radius: 6px;
+  background: #1c1c1c;
+  box-sizing: border-box;
 }
 
 /* PAIR */
@@ -77,7 +85,7 @@ h2 {
   margin-top: 5px;
 }
 
-/* GAME */
+/* SET BUTTON */
 .btnRow {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -93,7 +101,7 @@ h2 {
   color: white;
 }
 
-/* RESULT */
+/* GAME RESULT */
 .result-set {
   margin-top: 8px;
   padding: 8px;
