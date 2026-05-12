@@ -14,11 +14,10 @@ h1 {
 h2 {
   font-size: 12px;
   color: #aaa;
-  margin-top: 12px;
 }
 
 /* =========================
-   PLAYER (5열)
+   PLAYER
 ========================= */
 #playerList {
   display: grid;
@@ -34,8 +33,6 @@ h2 {
   padding: 8px 2px;
   border: 1px solid #222;
   user-select: none;
-  transition: 0.1s;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .player:active {
@@ -53,41 +50,37 @@ h2 {
 }
 
 /* =========================
-   FIXED PAIR (핵심 수정)
+   FIXED PAIR
 ========================= */
 .pairBox {
   display: grid;
-  grid-template-columns: 1fr 1fr 0.35fr; /* 더 작게 */
+  grid-template-columns: 1fr 1fr 0.4fr;
   gap: 4px;
   margin-bottom: 10px;
 }
 
-/* PLAYER랑 같은 느낌 + 더 작게 */
 .pairBox select {
   background: #1c1c1c;
   color: #fff;
   border: 1px solid #222;
   border-radius: 6px;
-  font-size: 9px;   /* ↓ 작게 */
+  font-size: 9px;
   padding: 6px 2px;
   height: 34px;
-  text-align: center;
 }
 
-/* + 버튼 더 작게 */
 #addPair {
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   height: 34px;
-  border-radius: 6px;
-  background: #1c1c1c;
   border: 1px dashed #555;
-  user-select: none;
 }
 
-/* PAIR 리스트 */
+/* =========================
+   PAIR LIST
+========================= */
 .pairItem {
   background: #ffb300;
   color: #000;
@@ -98,7 +91,7 @@ h2 {
 }
 
 /* =========================
-   GAME 버튼
+   GAME
 ========================= */
 .btnRow {
   display: grid;
@@ -124,5 +117,4 @@ h2 {
   background: #111;
   border-radius: 6px;
   font-size: 11px;
-  line-height: 1.4;
 }
