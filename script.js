@@ -8,27 +8,22 @@ const names = [
   "이명진","전유준","성제현","장이현"
 ];
 
-const players = names.map(n => ({
-  name:n,
-  active:false
-}));
+const players = names.map(n=>({name:n,active:false}));
 
-let pairs = [];
-const setStore = {1:null,2:null,3:null,4:null,5:null};
+let pairs=[];
+const setStore={1:null,2:null,3:null,4:null,5:null};
 
-const listEl = document.getElementById("playerList");
-const countEl = document.getElementById("count");
-const resultEl = document.getElementById("result");
-
-const p1 = document.getElementById("p1");
-const p2 = document.getElementById("p2");
-const addPair = document.getElementById("addPair");
-const pairList = document.getElementById("pairList");
+const listEl=document.getElementById("playerList");
+const countEl=document.getElementById("count");
+const resultEl=document.getElementById("result");
+const p1=document.getElementById("p1");
+const p2=document.getElementById("p2");
+const addPair=document.getElementById("addPair");
+const pairList=document.getElementById("pairList");
 
 /* PLAYER */
 function renderPlayers(){
   listEl.innerHTML="";
-
   [...players.filter(p=>p.active),...players.filter(p=>!p.active)]
   .forEach(p=>{
     const d=document.createElement("div");
@@ -51,7 +46,7 @@ function renderPlayers(){
   countEl.textContent=players.filter(p=>p.active).length;
 }
 
-/* SELECT (🔵 원복 핵심) */
+/* SELECT (PLAYER1/2 복구) */
 function renderSelect(){
   const active=players.filter(p=>p.active);
 
@@ -64,17 +59,14 @@ function renderSelect(){
   });
 }
 
-/* FIXED PAIR (원래 유지) */
+/* FIXED PAIR */
 addPair.onclick=()=>{
-  const a=p1.value;
-  const b=p2.value;
-
+  const a=p1.value,b=p2.value;
   if(!a||!b||a===b) return;
   if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
 
   pairs.push([a,b]);
-  p1.value="";
-  p2.value="";
+  p1.value=p2.value="";
   renderAll();
 };
 
@@ -97,8 +89,8 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
     const setNo=btn.dataset.set;
-
     const active=players.filter(p=>p.active);
+
     if(active.length<4) return alert("인원 부족");
 
     let used=new Set();
@@ -142,7 +134,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* RESULT */
+/* RESULT (SET + LOCK 복구 완료) */
 function renderResult(){
   resultEl.innerHTML="";
   const activePlayers=players.filter(p=>p.active);
@@ -154,13 +146,27 @@ function renderResult(){
     const wrap=document.createElement("div");
     wrap.className="result-set";
 
+    const header=document.createElement("div");
+
+    const title=document.createElement("span");
+    title.textContent=`(${i}SET) `;
+
+    const lock=document.createElement("button");
+    lock.className="lockBtn";
+    lock.textContent=set.locked?"UNLOCK":"LOCK";
+    lock.onclick=()=>toggleLock(i);
+
+    header.appendChild(title);
+    header.appendChild(lock);
+    wrap.appendChild(header);
+
     set.matches.forEach((m,idx)=>{
 
       const line=document.createElement("div");
 
-      const text=document.createElement("span");
-      text.textContent=
-        `${COURTS[idx]}코트 ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name}`;
+      const text=document.createTextNode(
+        `${COURTS[idx]}코트 ${m.team1[0].name} ${m.team1[1].name} vs ${m.team2[0].name} ${m.team2[1].name} `
+      );
 
       const s1=document.createElement("select");
       const s2=document.createElement("select");
@@ -173,11 +179,10 @@ function renderResult(){
       s1.value=m.s1;
       s2.value=m.s2;
 
-      s1.onchange=()=>m.s1=Number(s1.value);
-      s2.onchange=()=>m.s2=Number(s2.value);
+      s1.onchange=()=>m.s1=+s1.value;
+      s2.onchange=()=>m.s2=+s2.value;
 
       line.appendChild(text);
-      line.appendChild(document.createTextNode(" "));
       line.appendChild(s1);
       line.appendChild(document.createTextNode(" : "));
       line.appendChild(s2);
@@ -198,6 +203,12 @@ function renderResult(){
     wrap.appendChild(w);
     resultEl.appendChild(wrap);
   }
+}
+
+/* LOCK */
+function toggleLock(i){
+  setStore[i].locked=!setStore[i].locked;
+  renderResult();
 }
 
 /* UTIL */
