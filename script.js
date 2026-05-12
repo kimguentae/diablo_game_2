@@ -115,7 +115,7 @@ function renderPairs(){
   });
 }
 
-/* ========================= GAME (🔥 핵심: 이전 SET 대기 자동 승격) ========================= */
+/* ========================= GAME (🔥 핵심: 대기자 다음 SET 강제 참가) ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
 
@@ -123,7 +123,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     let active = players.filter(p=>p.active);
 
-    // 🔥 이전 SET 대기자 자동 포함
+    // 🔥 이전 SET 대기자는 무조건 다음 SET 참가
     if(setNo > 1 && setStore[setNo - 1]){
 
       const prevPlayed = new Set();
@@ -194,7 +194,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* ========================= RESULT (SET별 대기) ========================= */
+/* ========================= RESULT ========================= */
 function renderResult(){
 
   resultEl.innerHTML = "";
