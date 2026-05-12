@@ -16,9 +16,7 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* =========================
-   ELEMENT
-========================= */
+/* ========================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -28,9 +26,7 @@ const p2 = document.getElementById("p2");
 const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
-/* =========================
-   PLAYER
-========================= */
+/* ========================= PLAYER ========================= */
 function renderPlayers(){
   listEl.innerHTML = "";
 
@@ -69,9 +65,7 @@ function renderPlayers(){
   countEl.textContent = players.filter(p=>p.active).length;
 }
 
-/* =========================
-   SELECT
-========================= */
+/* ========================= SELECT ========================= */
 function renderSelect(){
   const active = players.filter(p=>p.active);
 
@@ -87,9 +81,7 @@ function renderSelect(){
   });
 }
 
-/* =========================
-   FIXED PAIR
-========================= */
+/* ========================= FIXED PAIR ========================= */
 addPair.onclick = ()=>{
   const a = p1.value;
   const b = p2.value;
@@ -123,9 +115,7 @@ function renderPairs(){
   });
 }
 
-/* =========================
-   GAME (최종 안정)
-========================= */
+/* ========================= GAME ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
 
@@ -140,10 +130,10 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used = new Set();
     let teams = [];
 
-    // 1. FIXED PAIR
+    // fixed pair
     pairs.forEach(p=>{
-      const a = active.find(x=>x.name === p[0]);
-      const b = active.find(x=>x.name === p[1]);
+      const a = active.find(x=>x.name===p[0]);
+      const b = active.find(x=>x.name===p[1]);
 
       if(a && b){
         teams.push([a,b]);
@@ -152,24 +142,23 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
-    // 2. 나머지 팀
-    let rest = active.filter(p => !used.has(p.name));
+    // rest
+    let rest = active.filter(p=>!used.has(p.name));
     shuffle(rest);
 
-    let soloTeams = [];
+    let solo = [];
     for(let i=0;i<rest.length;i+=2){
       if(rest[i+1]){
-        soloTeams.push([rest[i], rest[i+1]]);
+        solo.push([rest[i],rest[i+1]]);
       }
     }
 
-    let allTeams = [...teams, ...soloTeams];
-
+    let allTeams = [...teams,...solo];
     shuffle(allTeams);
 
-    // 3. 코트 수 제한 (🔥 핵심)
+    // COURT 제한 (🔥 핵심 수정)
     let matches = [];
-    let max = Math.min(COURTS.length, Math.floor(allTeams.length / 2));
+    let max = Math.min(COURTS.length, Math.floor(allTeams.length/2));
 
     for(let i=0;i<max;i++){
       const t1 = allTeams[i*2];
@@ -178,20 +167,17 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       if(!t1 || !t2) continue;
 
       matches.push([
-        t1[0], t1[1],
-        t2[0], t2[1]
+        t1[0],t1[1],
+        t2[0],t2[1]
       ]);
     }
 
     setStore[setNo] = matches;
-
     renderResult();
   };
 });
 
-/* =========================
-   RESULT + 대기자
-========================= */
+/* ========================= RESULT ========================= */
 function renderResult(){
 
   resultEl.innerHTML = "";
@@ -231,9 +217,7 @@ function renderResult(){
   }
 }
 
-/* =========================
-   UTIL
-========================= */
+/* ========================= UTIL ========================= */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -241,9 +225,7 @@ function shuffle(arr){
   }
 }
 
-/* =========================
-   INIT
-========================= */
+/* ========================= INIT ========================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
