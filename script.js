@@ -16,14 +16,16 @@ const setStore={1:null,2:null,3:null,4:null,5:null};
 const listEl=document.getElementById("playerList");
 const countEl=document.getElementById("count");
 const resultEl=document.getElementById("result");
+
 const p1=document.getElementById("p1");
 const p2=document.getElementById("p2");
 const addPair=document.getElementById("addPair");
 const pairList=document.getElementById("pairList");
 
-/* PLAYER */
+/* ================= PLAYER ================= */
 function renderPlayers(){
   listEl.innerHTML="";
+
   [...players.filter(p=>p.active),...players.filter(p=>!p.active)]
   .forEach(p=>{
     const d=document.createElement("div");
@@ -46,7 +48,7 @@ function renderPlayers(){
   countEl.textContent=players.filter(p=>p.active).length;
 }
 
-/* SELECT (PLAYER1/2 복구) */
+/* ================= SELECT ================= */
 function renderSelect(){
   const active=players.filter(p=>p.active);
 
@@ -59,7 +61,7 @@ function renderSelect(){
   });
 }
 
-/* FIXED PAIR */
+/* ================= FIXED PAIR ================= */
 addPair.onclick=()=>{
   const a=p1.value,b=p2.value;
   if(!a||!b||a===b) return;
@@ -84,13 +86,19 @@ function renderPairs(){
   });
 }
 
-/* GAME */
+/* ================= GAME ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
     const setNo=btn.dataset.set;
-    const active=players.filter(p=>p.active);
 
+    // 🔥 LOCK 체크
+    if(setStore[setNo]?.locked){
+      alert("LOCK 상태입니다");
+      return;
+    }
+
+    const active=players.filter(p=>p.active);
     if(active.length<4) return alert("인원 부족");
 
     let used=new Set();
@@ -99,6 +107,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     pairs.forEach(p=>{
       const a=active.find(x=>x.name===p[0]);
       const b=active.find(x=>x.name===p[1]);
+
       if(a&&b){
         teams.push([a,b]);
         used.add(a.name);
@@ -134,7 +143,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* RESULT (SET + LOCK 복구 완료) */
+/* ================= RESULT ================= */
 function renderResult(){
   resultEl.innerHTML="";
   const activePlayers=players.filter(p=>p.active);
@@ -153,7 +162,10 @@ function renderResult(){
 
     const lock=document.createElement("button");
     lock.className="lockBtn";
-    lock.textContent=set.locked?"UNLOCK":"LOCK";
+
+    // 🔥 아이콘 변경
+    lock.textContent=set.locked?"🔒":"🔓";
+
     lock.onclick=()=>toggleLock(i);
 
     header.appendChild(title);
@@ -205,13 +217,13 @@ function renderResult(){
   }
 }
 
-/* LOCK */
+/* ================= LOCK ================= */
 function toggleLock(i){
   setStore[i].locked=!setStore[i].locked;
   renderResult();
 }
 
-/* UTIL */
+/* ================= UTIL ================= */
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -219,7 +231,7 @@ function shuffle(a){
   }
 }
 
-/* INIT */
+/* ================= INIT ================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
