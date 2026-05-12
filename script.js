@@ -16,7 +16,7 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* ================= UI ================= */
+/* ================= DOM ================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -108,7 +108,7 @@ function renderPairs(){
   });
 }
 
-/* ================= SET GENERATION (핵심 수정) ================= */
+/* ================= GAME GENERATION ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = () => {
 
@@ -120,7 +120,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used = new Set();
     let teams = [];
 
-    /* 고정페어 */
+    /* 고정 페어 */
     pairs.forEach(p=>{
       const a = active.find(x=>x.name===p[0]);
       const b = active.find(x=>x.name===p[1]);
@@ -144,20 +144,16 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     shuffle(teams);
 
-    /* ================= 핵심 수정 =================
-       1경기 = 4명 기준
-       최대 경기 = 3코트 제한 + 인원 기준 */
+    /* ================= 핵심 =================
+       🔥 무조건 3코트까지만 */
     let matches = [];
 
-    let maxMatches = Math.min(
-      3,
-      Math.floor(active.length / 4)
-    );
+    const maxMatches = Math.min(3, Math.floor(teams.length / 2));
 
-    for (let i=0;i<maxMatches;i++) {
+    for (let i = 0; i < maxMatches; i++) {
 
-      const t1 = teams[i*2];
-      const t2 = teams[i*2+1];
+      const t1 = teams[i * 2];
+      const t2 = teams[i * 2 + 1];
 
       if (!t1 || !t2) continue;
 
@@ -192,13 +188,9 @@ function renderResult(){
     const wrap = document.createElement("div");
     wrap.className = "result-set";
 
-    const header = document.createElement("div");
-
-    const title = document.createElement("span");
+    const title = document.createElement("div");
     title.textContent = `${i}SET`;
-
-    header.appendChild(title);
-    wrap.appendChild(header);
+    wrap.appendChild(title);
 
     let played = new Set();
 
@@ -226,13 +218,13 @@ function renderResult(){
       s1.onchange = () => m.s1 = +s1.value;
       s2.onchange = () => m.s2 = +s2.value;
 
-      const scoreWrap = document.createElement("span");
-      scoreWrap.appendChild(s1);
-      scoreWrap.appendChild(document.createTextNode(" : "));
-      scoreWrap.appendChild(s2);
+      const score = document.createElement("span");
+      score.appendChild(s1);
+      score.appendChild(document.createTextNode(" : "));
+      score.appendChild(s2);
 
       line.appendChild(text);
-      line.appendChild(scoreWrap);
+      line.appendChild(score);
 
       wrap.appendChild(line);
 
