@@ -35,7 +35,7 @@ h2 { font-size:12px; color:#aaa; }
   color:#aaa;
 }
 
-/* FIXED PAIR */
+/* PAIR */
 .pairBox {
   display:grid;
   grid-template-columns:1fr 1fr 0.4fr;
@@ -59,7 +59,7 @@ h2 { font-size:12px; color:#aaa; }
   border:1px dashed #555;
 }
 
-/* PAIR */
+/* PAIR ITEM */
 .pairItem {
   background:#ffb300;
   color:#000;
@@ -85,7 +85,7 @@ h2 { font-size:12px; color:#aaa; }
   color:#fff;
 }
 
-/* GAME RESULT */
+/* RESULT */
 .result-set {
   margin-top:10px;
   padding:8px;
@@ -94,26 +94,23 @@ h2 { font-size:12px; color:#aaa; }
   font-size:11px;
 }
 
-/* LOCK */
+/* 🔒 LOCK 버튼 (요청 반영 핵심) */
 .lockBtn {
   font-size:10px;
   margin-left:6px;
   background:transparent;
   border:none;
-  color:#00c853;
+  color:transparent;   /* color none 효과 */
+  text-shadow:0 0 0 #00c853; /* 아이콘 유지 */
   cursor:pointer;
 }
 
-/* SCORE */
-.scoreWrap {
-  margin-left:40px;
-}
-
+/* SCORE SELECT */
 .result-set select {
-  background:#000;
+  background:#1c1c1c;
   color:#fff;
-  border:1px solid #333;
-  font-size:10px;
+  border:1px solid #222;
+  border-radius:6px;
+  font-size:9px;
   text-align:center;
-  text-align-last:center;
 }
