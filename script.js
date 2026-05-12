@@ -16,7 +16,6 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* ========================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -26,7 +25,7 @@ const p2 = document.getElementById("p2");
 const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
-/* ========================= PLAYER ========================= */
+/* PLAYER */
 function renderPlayers(){
   listEl.innerHTML = "";
 
@@ -65,7 +64,7 @@ function renderPlayers(){
   countEl.textContent = players.filter(p=>p.active).length;
 }
 
-/* ========================= SELECT ========================= */
+/* SELECT */
 function renderSelect(){
   const active = players.filter(p=>p.active);
 
@@ -81,7 +80,7 @@ function renderSelect(){
   });
 }
 
-/* ========================= FIXED PAIR ========================= */
+/* FIXED PAIR */
 addPair.onclick = ()=>{
   const a = p1.value;
   const b = p2.value;
@@ -115,11 +114,10 @@ function renderPairs(){
   });
 }
 
-/* ========================= GAME ========================= */
+/* GAME */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
 
-    const setNo = btn.dataset.set;
     const active = players.filter(p=>p.active);
 
     if(active.length < 4){
@@ -155,26 +153,24 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     shuffle(allTeams);
 
     let matches = [];
-    let maxGames = Math.min(COURTS.length, Math.floor(allTeams.length/2));
 
-    for(let i=0;i<maxGames;i++){
-      const t1 = allTeams[i*2];
-      const t2 = allTeams[i*2+1];
-
-      if(!t1 || !t2) continue;
-
-      matches.push([
-        t1[0],t1[1],
-        t2[0],t2[1]
-      ]);
+    for(let i=0;i<COURTS.length;i++){
+      if(allTeams[i*2] && allTeams[i*2+1]){
+        matches.push([
+          allTeams[i*2][0],
+          allTeams[i*2][1],
+          allTeams[i*2+1][0],
+          allTeams[i*2+1][1]
+        ]);
+      }
     }
 
-    setStore[setNo] = matches;
+    setStore[btn.dataset.set] = matches;
     renderResult();
   };
 });
 
-/* ========================= RESULT (SET별 대기 핵심) ========================= */
+/* RESULT */
 function renderResult(){
 
   resultEl.innerHTML = "";
@@ -192,15 +188,11 @@ function renderResult(){
     let html = `(${i}SET)<br>`;
 
     data.forEach((t,idx)=>{
-
       const court = COURTS[idx] || "C";
 
       html += `${court}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
 
-      played.add(t[0].name);
-      played.add(t[1].name);
-      played.add(t[2].name);
-      played.add(t[3].name);
+      t.forEach(p=>played.add(p.name));
     });
 
     const waiting = activePlayers.filter(p => !played.has(p.name));
@@ -212,7 +204,7 @@ function renderResult(){
   }
 }
 
-/* ========================= UTIL ========================= */
+/* UTIL */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -220,7 +212,7 @@ function shuffle(arr){
   }
 }
 
-/* ========================= INIT ========================= */
+/* INIT */
 function renderAll(){
   renderPlayers();
   renderSelect();
