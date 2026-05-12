@@ -25,6 +25,7 @@ const pairList=document.getElementById("pairList");
 /* ================= PLAYER ================= */
 function renderPlayers(){
   listEl.innerHTML="";
+
   [...players.filter(p=>p.active),...players.filter(p=>!p.active)]
   .forEach(p=>{
     const d=document.createElement("div");
@@ -62,17 +63,12 @@ function renderSelect(){
 
 /* ================= FIXED PAIR ================= */
 addPair.onclick=()=>{
-  const a=p1.value;
-  const b=p2.value;
-
+  const a=p1.value,b=p2.value;
   if(!a||!b||a===b) return;
   if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
 
   pairs.push([a,b]);
-
-  p1.value="";
-  p2.value="";
-
+  p1.value=p2.value="";
   renderAll();
 };
 
@@ -82,25 +78,22 @@ function renderPairs(){
     const d=document.createElement("div");
     d.className="pairItem";
     d.textContent=`PAIR ${i+1}: ${p[0]} ${p[1]}`;
-
     d.onclick=()=>{
       pairs=pairs.filter(x=>x!==p);
       renderAll();
     };
-
     pairList.appendChild(d);
   });
 }
 
-/* ================= SET GENERATION ================= */
+/* ================= SET GENERATE ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
     const setNo=btn.dataset.set;
 
-    /* 🔒 LOCK 체크 → alert 추가 */
     if(setStore[setNo]?.locked){
-      alert("Locked");
+      alert("LOCK 상태입니다");
       return;
     }
 
@@ -131,16 +124,10 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     shuffle(teams);
 
     let matches=[];
-    const max=Math.min(COURTS.length,Math.floor(teams.length/2));
-
-    for(let i=0;i<max;i++){
-      const t1=teams[i*2];
-      const t2=teams[i*2+1];
-      if(!t1||!t2) continue;
-
+    for(let i=0;i<Math.min(COURTS.length,teams.length/2);i++){
       matches.push({
-        team1:t1,
-        team2:t2,
+        team1:teams[i*2],
+        team2:teams[i*2+1],
         s1:0,
         s2:0
       });
@@ -158,11 +145,9 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 /* ================= RESULT ================= */
 function renderResult(){
   resultEl.innerHTML="";
-
   const active=players.filter(p=>p.active);
 
   for(let i=1;i<=5;i++){
-
     const set=setStore[i];
     if(!set) continue;
 
@@ -172,9 +157,12 @@ function renderResult(){
     const header=document.createElement("div");
 
     const title=document.createElement("span");
-    title.textContent=`${i}SET`;
+
+    // 🔥 괄호 제거
+    title.textContent=`${i}SET `;
 
     const lock=document.createElement("button");
+    lock.className="lockBtn";
     lock.textContent=set.locked?"🔒":"🔓";
     lock.onclick=()=>toggleLock(i);
 
@@ -204,13 +192,15 @@ function renderResult(){
       s1.onchange=()=>m.s1=+s1.value;
       s2.onchange=()=>m.s2=+s2.value;
 
-      const score=document.createElement("span");
-      score.appendChild(s1);
-      score.appendChild(document.createTextNode(" : "));
-      score.appendChild(s2);
+      const scoreWrap=document.createElement("span");
+      scoreWrap.className="scoreWrap";
+
+      scoreWrap.appendChild(s1);
+      scoreWrap.appendChild(document.createTextNode(" : "));
+      scoreWrap.appendChild(s2);
 
       line.appendChild(text);
-      line.appendChild(score);
+      line.appendChild(scoreWrap);
 
       wrap.appendChild(line);
     });
