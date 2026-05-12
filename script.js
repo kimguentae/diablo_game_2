@@ -16,16 +16,17 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* ELEMENT */
-const listEl=document.getElementById("playerList");
-const countEl=document.getElementById("count");
-const resultEl=document.getElementById("result");
-const p1=document.getElementById("p1");
-const p2=document.getElementById("p2");
-const addPair=document.getElementById("addPair");
-const pairList=document.getElementById("pairList");
+/* ========================= */
+const listEl = document.getElementById("playerList");
+const countEl = document.getElementById("count");
+const resultEl = document.getElementById("result");
 
-/* PLAYER */
+const p1 = document.getElementById("p1");
+const p2 = document.getElementById("p2");
+const addPair = document.getElementById("addPair");
+const pairList = document.getElementById("pairList");
+
+/* ========================= PLAYER ========================= */
 function renderPlayers(){
   listEl.innerHTML="";
 
@@ -51,7 +52,7 @@ function renderPlayers(){
   countEl.textContent=players.filter(p=>p.active).length;
 }
 
-/* SELECT */
+/* ========================= SELECT ========================= */
 function renderSelect(){
   const active=players.filter(p=>p.active);
 
@@ -64,37 +65,46 @@ function renderSelect(){
   });
 }
 
-/* PAIR */
+/* ========================= FIXED PAIR (원래대로 복구) ========================= */
 addPair.onclick=()=>{
-  if(!p1.value||!p2.value||p1.value===p2.value) return;
-  if(pairs.some(x=>x.includes(p1.value)||x.includes(p2.value))) return;
+  const a=p1.value;
+  const b=p2.value;
 
-  pairs.push([p1.value,p2.value]);
-  p1.value=p2.value="";
+  if(!a||!b||a===b) return;
+
+  // 원래 방식 (한명이라도 중복이면 막기)
+  if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
+
+  pairs.push([a,b]);
+
+  p1.value="";
+  p2.value="";
+
   renderAll();
 };
 
 function renderPairs(){
   pairList.innerHTML="";
+
   pairs.forEach((p,i)=>{
     const d=document.createElement("div");
     d.className="pairItem";
     d.textContent=`PAIR ${i+1}: ${p[0]} ${p[1]}`;
-    d.onclick=()=>{pairs=pairs.filter(x=>x!==p);renderAll();};
+
+    d.onclick=()=>{
+      pairs=pairs.filter(x=>x!==p);
+      renderAll();
+    };
+
     pairList.appendChild(d);
   });
 }
 
-/* GAME */
+/* ========================= GAME ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
     const setNo=btn.dataset.set;
-
-    if(setStore[setNo]?.locked){
-      alert("LOCK 상태입니다");
-      return;
-    }
 
     const active=players.filter(p=>p.active);
     if(active.length<4) return alert("인원 부족");
@@ -105,6 +115,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     pairs.forEach(p=>{
       const a=active.find(x=>x.name===p[0]);
       const b=active.find(x=>x.name===p[1]);
+
       if(a&&b){
         teams.push([a,b]);
         used.add(a.name);
@@ -140,7 +151,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* RESULT (핵심 안정 DOM 방식) */
+/* ========================= RESULT ========================= */
 function renderResult(){
   resultEl.innerHTML="";
   const activePlayers=players.filter(p=>p.active);
@@ -151,19 +162,6 @@ function renderResult(){
 
     const wrap=document.createElement("div");
     wrap.className="result-set";
-    if(set.locked) wrap.classList.add("locked");
-
-    const title=document.createElement("div");
-    title.innerHTML=`(${i}SET) `;
-
-    const btn=document.createElement("button");
-    btn.className="lockBtn";
-    btn.textContent=set.locked?"UNLOCK":"LOCK";
-    btn.onclick=()=>toggleLock(i);
-
-    wrap.appendChild(title);
-    wrap.appendChild(btn);
-    wrap.appendChild(document.createElement("br"));
 
     set.matches.forEach((m,idx)=>{
 
@@ -184,18 +182,16 @@ function renderResult(){
       s1.value=m.s1;
       s2.value=m.s2;
 
-      s1.disabled=set.locked;
-      s2.disabled=set.locked;
-
       s1.onchange=()=>m.s1=Number(s1.value);
       s2.onchange=()=>m.s2=Number(s2.value);
 
       line.appendChild(text);
-      line.appendChild(document.createTextNode(" ( "));
+
+      // 🔥 요청사항: 괄호 제거 + inline
+      line.appendChild(document.createTextNode(" "));
       line.appendChild(s1);
-      line.appendChild(document.createTextNode(" ) : ( "));
+      line.appendChild(document.createTextNode(" : "));
       line.appendChild(s2);
-      line.appendChild(document.createTextNode(" )"));
 
       wrap.appendChild(line);
     });
@@ -215,13 +211,7 @@ function renderResult(){
   }
 }
 
-/* LOCK */
-function toggleLock(setNo){
-  setStore[setNo].locked=!setStore[setNo].locked;
-  renderResult();
-}
-
-/* UTIL */
+/* ========================= UTIL ========================= */
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -229,7 +219,7 @@ function shuffle(a){
   }
 }
 
-/* INIT */
+/* ========================= INIT ========================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
