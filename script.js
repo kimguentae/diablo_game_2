@@ -63,17 +63,12 @@ function renderSelect(){
 
 /* ================= FIXED PAIR ================= */
 addPair.onclick=()=>{
-  const a=p1.value;
-  const b=p2.value;
-
+  const a=p1.value,b=p2.value;
   if(!a||!b||a===b) return;
   if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
 
   pairs.push([a,b]);
-
-  p1.value="";
-  p2.value="";
-
+  p1.value=p2.value="";
   renderAll();
 };
 
@@ -83,25 +78,22 @@ function renderPairs(){
     const d=document.createElement("div");
     d.className="pairItem";
     d.textContent=`PAIR ${i+1}: ${p[0]} ${p[1]}`;
-
     d.onclick=()=>{
       pairs=pairs.filter(x=>x!==p);
       renderAll();
     };
-
     pairList.appendChild(d);
   });
 }
 
-/* ================= SET GENERATION ================= */
+/* ================= SET GENERATE ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
     const setNo=btn.dataset.set;
 
-    /* 🔒 LOCK이면 alert */
     if(setStore[setNo]?.locked){
-      alert("Locked");
+      alert("LOCK 상태입니다");
       return;
     }
 
@@ -123,22 +115,20 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
-    /* 나머지 */
+    /* 나머지 랜덤 */
     let rest=active.filter(p=>!used.has(p.name));
     shuffle(rest);
 
     for(let i=0;i<rest.length;i+=2){
-      if(rest[i+1]){
-        teams.push([rest[i],rest[i+1]]);
-      }
+      if(rest[i+1]) teams.push([rest[i],rest[i+1]]);
     }
 
     shuffle(teams);
 
-    /* 🔥 핵심: 3코트 제한 + 가능한 만큼만 */
-    let matches=[];
+    /* ================= CORE IMPROVED LOGIC ================= */
+    const maxMatches = Math.min(COURTS.length, Math.floor(teams.length / 2));
 
-    const maxMatches = Math.min(3, Math.floor(teams.length / 2));
+    let matches=[];
 
     for(let i=0;i<maxMatches;i++){
       const t1=teams[i*2];
@@ -154,6 +144,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       });
     }
 
+    /* 저장 */
     setStore[setNo]={
       locked:false,
       matches
@@ -166,11 +157,9 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 /* ================= RESULT ================= */
 function renderResult(){
   resultEl.innerHTML="";
-
   const active=players.filter(p=>p.active);
 
   for(let i=1;i<=5;i++){
-
     const set=setStore[i];
     if(!set) continue;
 
@@ -182,8 +171,8 @@ function renderResult(){
     const title=document.createElement("span");
     title.textContent=`${i}SET`;
 
-    const lock=document.createElementconst lock=document.createElement("button");
-    lock.className="lockBtn";("button");
+    const lock=document.createElement("button");
+    lock.className="lockBtn";
     lock.textContent=set.locked?"🔒":"🔓";
     lock.onclick=()=>toggleLock(i);
 
@@ -213,18 +202,15 @@ function renderResult(){
       s1.onchange=()=>m.s1=+s1.value;
       s2.onchange=()=>m.s2=+s2.value;
 
-      const score=document.createElement("span");
-      score.appendChild(s1);
-      score.appendChild(document.createTextNode(" : "));
-      score.appendChild(s2);
+      const scoreWrap=document.createElement("span");
+      scoreWrap.className="scoreWrap";
 
-const spacer = document.createElement("span");
-spacer.style.display = "inline-block";
-spacer.style.width = "32px"; // 약 4칸 느낌
+      scoreWrap.appendChild(s1);
+      scoreWrap.appendChild(document.createTextNode(" : "));
+      scoreWrap.appendChild(s2);
 
-line.appendChild(text);
-line.appendChild(spacer);
-line.appendChild(score);
+      line.appendChild(text);
+      line.appendChild(scoreWrap);
 
       wrap.appendChild(line);
     });
