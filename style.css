@@ -8,7 +8,8 @@ body{
 
 h1{
   text-align:center;
-  font-size:18px;
+  font-size:16px;
+  margin-bottom:10px;
 }
 
 h2{
@@ -31,11 +32,13 @@ h2{
   padding:10px 2px;
   border:1px solid #222;
   user-select:none;
+  transition:0.15s;
 }
 
 .player.active{
   background:#00c853;
   color:#000;
+  transform:scale(0.98);
 }
 
 /* FIXED PAIR */
@@ -45,10 +48,9 @@ h2{
   margin-bottom:10px;
 }
 
-/* select = 모바일 휠 */
 select{
   flex:1;
-  font-size:12px;
+  font-size:13px;
   background:#111;
   color:#fff;
   border:1px solid #333;
@@ -56,7 +58,6 @@ select{
   padding:8px;
 }
 
-/* + 버튼 */
 .plusBtn{
   width:42px;
   display:flex;
@@ -86,7 +87,7 @@ select{
 }
 
 .genBtn{
-  font-size:10px;
+  font-size:11px;
   padding:10px 0;
   border:none;
   border-radius:6px;
