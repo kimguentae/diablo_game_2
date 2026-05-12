@@ -14,9 +14,11 @@ const players = names.map(n => ({
 }));
 
 let pairs = [];
+
+// 🔥 핵심: set마다 {matches, waiting}
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* ========================= DOM ========================= */
+/* ================= DOM ================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -26,7 +28,7 @@ const p2 = document.getElementById("p2");
 const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
-/* ========================= PLAYER ========================= */
+/* ================= PLAYER ================= */
 function renderPlayers(){
   listEl.innerHTML = "";
 
@@ -65,7 +67,7 @@ function renderPlayers(){
   countEl.textContent = players.filter(p=>p.active).length;
 }
 
-/* ========================= SELECT ========================= */
+/* ================= SELECT ================= */
 function renderSelect(){
   const active = players.filter(p=>p.active);
 
@@ -81,19 +83,19 @@ function renderSelect(){
   });
 }
 
-/* ========================= FIXED PAIR ========================= */
+/* ================= FIXED PAIR ================= */
 addPair.onclick = ()=>{
   const a = p1.value;
   const b = p2.value;
 
-  if(!a || !b || a === b) return;
+  if(!a || !b || a===b) return;
 
-  if(pairs.some(x => x.includes(a) || x.includes(b))) return;
+  if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
 
   pairs.push([a,b]);
 
-  p1.value = "";
-  p2.value = "";
+  p1.value="";
+  p2.value="";
 
   renderAll();
 };
@@ -115,7 +117,7 @@ function renderPairs(){
   });
 }
 
-/* ========================= GAME (🔥 핵심: 대기자 다음 SET 강제 참가) ========================= */
+/* ================= GAME (🔥 핵심: 무조건 다음 SET 참가) ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
 
@@ -125,20 +127,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     // 🔥 이전 SET 대기자는 무조건 다음 SET 참가
     if(setNo > 1 && setStore[setNo - 1]){
-
-      const prevPlayed = new Set();
-
-      setStore[setNo - 1].forEach(t=>{
-        prevPlayed.add(t[0].name);
-        prevPlayed.add(t[1].name);
-        prevPlayed.add(t[2].name);
-        prevPlayed.add(t[3].name);
-      });
-
-      const prevWaiting = players.filter(p =>
-        p.active && !prevPlayed.has(p.name)
-      );
-
+      const prevWaiting = setStore[setNo - 1].waiting || [];
       active = [...new Set([...active, ...prevWaiting])];
     }
 
@@ -180,26 +169,32 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     for(let i=0;i<maxGames;i++){
       const t1 = allTeams[i*2];
       const t2 = allTeams[i*2+1];
-
       if(!t1 || !t2) continue;
 
-      matches.push([
-        t1[0],t1[1],
-        t2[0],t2[1]
-      ]);
+      matches.push([t1[0],t1[1],t2[0],t2[1]]);
     }
 
-    setStore[setNo] = matches;
+    // 🔥 played / waiting 정확히 저장
+    let played = new Set();
+    matches.forEach(m=>{
+      m.forEach(p=>played.add(p.name));
+    });
+
+    let waiting = active.filter(p=>!played.has(p.name));
+
+    setStore[setNo] = {
+      matches,
+      waiting
+    };
+
     renderResult();
   };
 });
 
-/* ========================= RESULT ========================= */
+/* ================= RESULT ================= */
 function renderResult(){
 
   resultEl.innerHTML = "";
-
-  const activePlayers = players.filter(p=>p.active);
 
   for(let i=1;i<=5;i++){
     const data = setStore[i];
@@ -208,31 +203,20 @@ function renderResult(){
     const div = document.createElement("div");
     div.className = "result-set";
 
-    let played = new Set();
     let html = `(${i}SET)<br>`;
 
-    data.forEach((t,idx)=>{
-
-      const court = COURTS[idx] || "C";
-
-      html += `${court}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
-
-      played.add(t[0].name);
-      played.add(t[1].name);
-      played.add(t[2].name);
-      played.add(t[3].name);
+    data.matches.forEach((t,idx)=>{
+      html += `${COURTS[idx]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
     });
 
-    const waiting = activePlayers.filter(p => !played.has(p.name));
-
-    html += `<br>대기 : ${waiting.map(p=>p.name).join(" ")}`;
+    html += `<br>대기 : ${(data.waiting||[]).map(p=>p.name).join(" ")}`;
 
     div.innerHTML = html;
     resultEl.appendChild(div);
   }
 }
 
-/* ========================= UTIL ========================= */
+/* ================= UTIL ================= */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -240,7 +224,7 @@ function shuffle(arr){
   }
 }
 
-/* ========================= INIT ========================= */
+/* ================= INIT ================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
