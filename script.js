@@ -15,7 +15,7 @@ const players = names.map(n => ({
 
 let pairs = [];
 
-// 🔥 핵심: 대기자 누적 변수 1개
+// 🔥 핵심: 대기자는 1회성
 let carryOver = [];
 
 const listEl = document.getElementById("playerList");
@@ -122,10 +122,12 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     let active = players.filter(p=>p.active);
 
-    // 🔥 이전 대기자 무조건 합류
-    active = [...active, ...carryOver];
+    // 🔥 1회만 합류 후 즉시 소멸
+    if(carryOver.length > 0){
+      active = [...active, ...carryOver];
+      carryOver = [];
+    }
 
-    // 중복 제거
     active = [...new Map(active.map(p=>[p.name,p])).values()];
 
     if(active.length < 4){
@@ -178,7 +180,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       m.forEach(p=>played.add(p.name));
     });
 
-    // 🔥 다음 SET으로 넘길 대기자
+    // 🔥 다음 SET 전달용 (단, 다음 SET에서만 사용되고 다시 사라짐)
     carryOver = active.filter(p=>!played.has(p.name));
 
     renderResult();
@@ -193,9 +195,8 @@ function renderResult(){
   div.className = "result-set";
 
   div.innerHTML = `
-    <b>GAME RESULT</b><br><br>
-    (현재 SET 기준)<br>
-    대기 : ${carryOver.map(p=>p.name).join(" ")}
+    GAME RESULT<br><br>
+    대기 (다음 1회만 반영): ${carryOver.map(p=>p.name).join(" ")}
   `;
 
   resultEl.appendChild(div);
