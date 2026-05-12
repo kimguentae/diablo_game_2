@@ -124,7 +124,7 @@ function renderPairs(){
 }
 
 /* =========================
-   GAME (완전 안정 구조)
+   GAME (최종 안정)
 ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
@@ -140,7 +140,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used = new Set();
     let teams = [];
 
-    // 1. FIXED PAIR → 팀
+    // 1. FIXED PAIR
     pairs.forEach(p=>{
       const a = active.find(x=>x.name === p[0]);
       const b = active.find(x=>x.name === p[1]);
@@ -152,7 +152,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
-    // 2. 나머지 → 팀 생성
+    // 2. 나머지 팀
     let rest = active.filter(p => !used.has(p.name));
     shuffle(rest);
 
@@ -165,15 +165,15 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     let allTeams = [...teams, ...soloTeams];
 
-    // ⭐ 핵심: 팀 자체를 섞어야 고정 상대 방지
     shuffle(allTeams);
 
-    // 3. 팀 vs 팀
+    // 3. 코트 수 제한 (🔥 핵심)
     let matches = [];
+    let max = Math.min(COURTS.length, Math.floor(allTeams.length / 2));
 
-    for(let i=0;i<allTeams.length;i+=2){
-      const t1 = allTeams[i];
-      const t2 = allTeams[i+1];
+    for(let i=0;i<max;i++){
+      const t1 = allTeams[i*2];
+      const t2 = allTeams[i*2+1];
 
       if(!t1 || !t2) continue;
 
@@ -184,6 +184,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     }
 
     setStore[setNo] = matches;
+
     renderResult();
   };
 });
@@ -192,7 +193,10 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
    RESULT + 대기자
 ========================= */
 function renderResult(){
+
   resultEl.innerHTML = "";
+
+  let played = new Set();
 
   for(let i=1;i<=5;i++){
     const data = setStore[i];
@@ -203,16 +207,21 @@ function renderResult(){
 
     div.innerHTML =
       `(${i}SET)<br>` +
-      data.map((t,idx)=>
-        `${COURTS[idx] || "C"}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}`
-      ).join("<br>");
+      data.map((t,idx)=>{
+        played.add(t[0].name);
+        played.add(t[1].name);
+        played.add(t[2].name);
+        played.add(t[3].name);
+
+        return `${COURTS[idx]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}`;
+      }).join("<br>");
 
     resultEl.appendChild(div);
   }
 
   const waiting = players
     .filter(p=>p.active)
-    .filter(p=>!isInGame(p.name));
+    .filter(p=>!played.has(p.name));
 
   if(waiting.length){
     const div = document.createElement("div");
@@ -220,18 +229,6 @@ function renderResult(){
     div.innerHTML = "대기 : " + waiting.map(p=>p.name).join(" ");
     resultEl.appendChild(div);
   }
-}
-
-function isInGame(name){
-  for(let i=1;i<=5;i++){
-    const data = setStore[i];
-    if(!data) continue;
-
-    for(const m of data){
-      if(m.some(p => p.name === name)) return true;
-    }
-  }
-  return false;
 }
 
 /* =========================
