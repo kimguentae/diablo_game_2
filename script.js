@@ -30,7 +30,7 @@ const pairList = document.getElementById("pairList");
 function renderPlayers(){
   listEl.innerHTML = "";
 
-  [...players.filter(p=>p.active),...players.filter(p=>!p.active)]
+  [...players.filter(p=>p.active), ...players.filter(p=>!p.active)]
   .forEach(p=>{
     const div = document.createElement("div");
     div.className = "player" + (p.active ? " active" : "");
@@ -84,6 +84,7 @@ addPair.onclick = () => {
   if (pairs.some(x => x.includes(a) || x.includes(b))) return;
 
   pairs.push([a,b]);
+
   p1.value = "";
   p2.value = "";
 
@@ -107,7 +108,7 @@ function renderPairs(){
   });
 }
 
-/* ================= SET GENERATION (핵심 안정화) ================= */
+/* ================= SET GENERATION (핵심 수정) ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = () => {
 
@@ -119,7 +120,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used = new Set();
     let teams = [];
 
-    // 고정페어
+    /* 고정페어 */
     pairs.forEach(p=>{
       const a = active.find(x=>x.name===p[0]);
       const b = active.find(x=>x.name===p[1]);
@@ -131,7 +132,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
-    // 나머지 자동 페어
+    /* 나머지 자동 페어 */
     let rest = active.filter(p => !used.has(p.name));
     shuffle(rest);
 
@@ -143,9 +144,15 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     shuffle(teams);
 
-    /* 🔥 핵심: 최대 3경기 (코트 고정) */
+    /* ================= 핵심 수정 =================
+       1경기 = 4명 기준
+       최대 경기 = 3코트 제한 + 인원 기준 */
     let matches = [];
-    let maxMatches = Math.min(3, Math.floor(teams.length / 2));
+
+    let maxMatches = Math.min(
+      3,
+      Math.floor(active.length / 4)
+    );
 
     for (let i=0;i<maxMatches;i++) {
 
@@ -239,7 +246,6 @@ function renderResult(){
     w.textContent = "대기 : " + wait.map(p=>p.name).join(" ");
 
     wrap.appendChild(w);
-
     resultEl.appendChild(wrap);
   }
 
