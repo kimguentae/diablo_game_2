@@ -16,6 +16,9 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
+/* =========================
+   ELEMENT
+========================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -26,7 +29,7 @@ const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
 /* =========================
-   PLAYER
+   PLAYER + GUEST
 ========================= */
 function renderPlayers(){
   listEl.innerHTML = "";
@@ -166,7 +169,9 @@ function renderResult(){
   }
 }
 
-/* shuffle */
+/* =========================
+   shuffle
+========================= */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -174,7 +179,9 @@ function shuffle(arr){
   }
 }
 
-/* INIT */
+/* =========================
+   INIT
+========================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
