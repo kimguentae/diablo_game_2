@@ -14,11 +14,10 @@ h1 {
 h2 {
   font-size: 12px;
   color: #aaa;
-  margin-top: 14px;
 }
 
 /* =========================
-   PLAYER (5열)
+   PLAYER
 ========================= */
 #playerList {
   display: grid;
@@ -34,13 +33,11 @@ h2 {
   padding: 8px 2px;
   border: 1px solid #222;
   user-select: none;
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
-  -webkit-tap-highlight-color: transparent;
+  transition: 0.1s;
 }
 
 .player:active {
   transform: scale(0.92);
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
 }
 
 .player.active {
@@ -54,20 +51,39 @@ h2 {
 }
 
 /* =========================
-   FIXED PAIR
+   FIXED PAIR UI
 ========================= */
-#pairSection {
+.pair-control {
   display: flex;
   gap: 5px;
-  flex-wrap: wrap;
+  margin-bottom: 6px;
 }
 
+select {
+  flex: 1;
+  font-size: 10px;
+  background: #111;
+  color: #fff;
+  border: 1px solid #333;
+}
+
+.plusBig {
+  width: 50px;
+  font-size: 16px;
+  background: #2979ff;
+  border: none;
+  border-radius: 6px;
+  color: white;
+}
+
+/* PAIR */
 .pair {
   background: #ffab00;
   color: #000;
   font-size: 10px;
   padding: 6px;
   border-radius: 6px;
+  margin-top: 5px;
 }
 
 /* =========================
