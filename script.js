@@ -15,7 +15,7 @@ const players = names.map(n => ({
 
 let pairs = [];
 
-// 🔥 핵심: set마다 {matches, waiting}
+// SET 저장 (matches + waiting)
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
 /* ================= DOM ================= */
@@ -117,19 +117,22 @@ function renderPairs(){
   });
 }
 
-/* ================= GAME (🔥 핵심: 무조건 다음 SET 참가) ================= */
+/* ================= GAME (🔥 핵심) ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
 
     const setNo = Number(btn.dataset.set);
 
+    // 현재 active
     let active = players.filter(p=>p.active);
 
-    // 🔥 이전 SET 대기자는 무조건 다음 SET 참가
-    if(setNo > 1 && setStore[setNo - 1]){
-      const prevWaiting = setStore[setNo - 1].waiting || [];
-      active = [...new Set([...active, ...prevWaiting])];
+    // 🔥 이전 SET 대기자 무조건 합류
+    if(setNo > 1 && setStore[setNo-1]){
+      active = active.concat(setStore[setNo-1].waiting || []);
     }
+
+    // 중복 제거
+    active = [...new Map(active.map(p => [p.name,p])).values()];
 
     if(active.length < 4){
       alert("인원 부족");
@@ -139,14 +142,15 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used = new Set();
     let teams = [];
 
-    pairs.forEach(p=>{
-      const a = active.find(x=>x.name===p[0]);
-      const b = active.find(x=>x.name===p[1]);
+    // fixed pair
+    pairs.forEach(([a,b])=>{
+      const pa = active.find(p=>p.name===a);
+      const pb = active.find(p=>p.name===b);
 
-      if(a && b){
-        teams.push([a,b]);
-        used.add(a.name);
-        used.add(b.name);
+      if(pa && pb){
+        teams.push([pa,pb]);
+        used.add(a);
+        used.add(b);
       }
     });
 
@@ -164,18 +168,21 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     shuffle(allTeams);
 
     let matches = [];
-    let maxGames = Math.min(COURTS.length, Math.floor(allTeams.length/2));
 
-    for(let i=0;i<maxGames;i++){
-      const t1 = allTeams[i*2];
-      const t2 = allTeams[i*2+1];
-      if(!t1 || !t2) continue;
-
-      matches.push([t1[0],t1[1],t2[0],t2[1]]);
+    for(let i=0;i<COURTS.length;i++){
+      if(allTeams[i*2] && allTeams[i*2+1]){
+        matches.push([
+          allTeams[i*2][0],
+          allTeams[i*2][1],
+          allTeams[i*2+1][0],
+          allTeams[i*2+1][1]
+        ]);
+      }
     }
 
-    // 🔥 played / waiting 정확히 저장
+    // 🔥 played / waiting
     let played = new Set();
+
     matches.forEach(m=>{
       m.forEach(p=>played.add(p.name));
     });
@@ -193,7 +200,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
 /* ================= RESULT ================= */
 function renderResult(){
-
   resultEl.innerHTML = "";
 
   for(let i=1;i<=5;i++){
@@ -205,8 +211,8 @@ function renderResult(){
 
     let html = `(${i}SET)<br>`;
 
-    data.matches.forEach((t,idx)=>{
-      html += `${COURTS[idx]}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
+    data.matches.forEach((m,idx)=>{
+      html += `${COURTS[idx]}코트: ${m[0].name} ${m[1].name} vs ${m[2].name} ${m[3].name}<br>`;
     });
 
     html += `<br>대기 : ${(data.waiting||[]).map(p=>p.name).join(" ")}`;
