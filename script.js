@@ -124,7 +124,12 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     shuffle(teams);
 
     let matches=[];
-    for(let i=0;i<Math.min(COURTS.length,teams.length/2);i++){
+    const maxMatches=Math.min(
+      COURTS.length,
+      Math.floor(teams.length/2)
+    );
+
+    for(let i=0;i<maxMatches;i++){
       matches.push({
         team1:teams[i*2],
         team2:teams[i*2+1],
@@ -155,10 +160,7 @@ function renderResult(){
     wrap.className="result-set";
 
     const header=document.createElement("div");
-
     const title=document.createElement("span");
-
-    // 🔥 괄호 제거
     title.textContent=`${i}SET `;
 
     const lock=document.createElement("button");
@@ -171,7 +173,6 @@ function renderResult(){
     wrap.appendChild(header);
 
     set.matches.forEach((m,idx)=>{
-
       const line=document.createElement("div");
 
       const text=document.createTextNode(
@@ -201,7 +202,6 @@ function renderResult(){
 
       line.appendChild(text);
       line.appendChild(scoreWrap);
-
       wrap.appendChild(line);
     });
 
@@ -211,7 +211,6 @@ function renderResult(){
     });
 
     const wait=active.filter(p=>!played.has(p.name));
-
     const w=document.createElement("div");
     w.textContent="대기 : "+wait.map(p=>p.name).join(" ");
 
