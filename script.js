@@ -8,16 +8,17 @@ const names = [
   "이명진","전유준","성제현","장이현"
 ];
 
-const players = names.map(n => ({
-  name: n,
-  active: false
-}));
+const players = names.map(n => ({ name: n, active: false }));
 
 const listEl = document.getElementById("playerList");
 const resultEl = document.getElementById("result");
 const countEl = document.getElementById("count");
 
+const pairListEl = document.getElementById("pairList");
+const addPairBtn = document.getElementById("addPair");
+
 const setStore = {1:null,2:null,3:null,4:null,5:null};
+let fixedPairs = [];
 
 /* =========================
    PLAYER
@@ -35,7 +36,6 @@ players.forEach(p=>{
     p.active = !p.active;
     div.classList.toggle("active");
     updateCount();
-
     reorder();
   };
 
@@ -84,18 +84,51 @@ function reorder(){
   players.forEach(p=>{
     const el = Array.from(listEl.children)
       .find(d => d.innerText === p.name);
-
     if(!el) return;
-
-    if(p.active) active.push(el);
-    else inactive.push(el);
+    (p.active ? active : inactive).push(el);
   });
 
   listEl.innerHTML = "";
-
   active.forEach(el => listEl.appendChild(el));
   inactive.forEach(el => listEl.appendChild(el));
   listEl.appendChild(guest);
+}
+
+/* =========================
+   FIXED PAIR
+========================= */
+addPairBtn.onclick = ()=>{
+  const activePlayers = players.filter(p=>p.active);
+  if(activePlayers.length < 2){
+    alert("참석자 2명 이상 필요");
+    return;
+  }
+
+  const first = prompt(
+    "첫 번째 선수:\n" + activePlayers.map(p=>p.name).join(", ")
+  );
+  const p1 = activePlayers.find(p=>p.name===first);
+  if(!p1) return;
+
+  const second = prompt(
+    "두 번째 선수:\n" +
+    activePlayers.filter(p=>p.name!==p1.name).map(p=>p.name).join(", ")
+  );
+  const p2 = activePlayers.find(p=>p.name===second);
+  if(!p2) return;
+
+  fixedPairs.push({p1,p2});
+  renderPairs();
+};
+
+function renderPairs(){
+  pairListEl.innerHTML = "";
+  fixedPairs.forEach((pair,i)=>{
+    const div = document.createElement("div");
+    div.className = "pair";
+    div.innerText = `PAIR ${i+1}: ${pair.p1.name} · ${pair.p2.name}`;
+    pairListEl.appendChild(div);
+  });
 }
 
 /* =========================
@@ -103,10 +136,8 @@ function reorder(){
 ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
-
     const setNo = +btn.dataset.set;
     const available = players.filter(p=>p.active);
-
     if(available.length < 4){
       alert("인원 부족");
       return;
@@ -120,7 +151,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     for(let i=0;i<COURTS.length;i++){
       let team = [];
-
       while(team.length<4 && pool.length){
         const p = pool.shift();
         if(!used.has(p.name)){
@@ -128,7 +158,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
           team.push(p);
         }
       }
-
       if(team.length===4) matches.push(team);
     }
 
@@ -149,7 +178,6 @@ function render(){
 
     const div = document.createElement("div");
     div.className = "result-set";
-
     div.innerHTML =
       `(${s})<br>` +
       data.map((t,i)=>
