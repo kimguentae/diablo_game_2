@@ -142,7 +142,6 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
-    // rest
     let rest = active.filter(p=>!used.has(p.name));
     shuffle(rest);
 
@@ -156,11 +155,11 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let allTeams = [...teams,...solo];
     shuffle(allTeams);
 
-    // COURT 제한 (🔥 핵심 수정)
+    // 🔥 3코트 고정 = 최대 12명
     let matches = [];
-    let max = Math.min(COURTS.length, Math.floor(allTeams.length/2));
+    let maxGames = Math.min(COURTS.length, Math.floor(allTeams.length/2));
 
-    for(let i=0;i<max;i++){
+    for(let i=0;i<maxGames;i++){
       const t1 = allTeams[i*2];
       const t2 = allTeams[i*2+1];
 
@@ -205,6 +204,7 @@ function renderResult(){
     resultEl.appendChild(div);
   }
 
+  // 🔥 대기자 (정확 계산)
   const waiting = players
     .filter(p=>p.active)
     .filter(p=>!played.has(p.name));
