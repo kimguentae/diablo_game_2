@@ -22,7 +22,7 @@ const p2=document.getElementById("p2");
 const addPair=document.getElementById("addPair");
 const pairList=document.getElementById("pairList");
 
-/* PLAYER */
+/* ================= PLAYER ================= */
 function renderPlayers(){
   listEl.innerHTML="";
   [...players.filter(p=>p.active),...players.filter(p=>!p.active)]
@@ -47,7 +47,7 @@ function renderPlayers(){
   countEl.textContent=players.filter(p=>p.active).length;
 }
 
-/* SELECT */
+/* ================= SELECT ================= */
 function renderSelect(){
   const active=players.filter(p=>p.active);
 
@@ -60,14 +60,19 @@ function renderSelect(){
   });
 }
 
-/* FIXED PAIR */
+/* ================= FIXED PAIR ================= */
 addPair.onclick=()=>{
-  const a=p1.value,b=p2.value;
+  const a=p1.value;
+  const b=p2.value;
+
   if(!a||!b||a===b) return;
   if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
 
   pairs.push([a,b]);
-  p1.value=p2.value="";
+
+  p1.value="";
+  p2.value="";
+
   renderAll();
 };
 
@@ -77,22 +82,25 @@ function renderPairs(){
     const d=document.createElement("div");
     d.className="pairItem";
     d.textContent=`PAIR ${i+1}: ${p[0]} ${p[1]}`;
+
     d.onclick=()=>{
       pairs=pairs.filter(x=>x!==p);
       renderAll();
     };
+
     pairList.appendChild(d);
   });
 }
 
-/* SET GENERATE */
+/* ================= SET GENERATION ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
 
     const setNo=btn.dataset.set;
 
+    /* 🔒 LOCK 체크 → alert 추가 */
     if(setStore[setNo]?.locked){
-      alert("LOCK 상태입니다");
+      alert("Locked");
       return;
     }
 
@@ -105,6 +113,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     pairs.forEach(p=>{
       const a=active.find(x=>x.name===p[0]);
       const b=active.find(x=>x.name===p[1]);
+
       if(a&&b){
         teams.push([a,b]);
         used.add(a.name);
@@ -122,27 +131,38 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     shuffle(teams);
 
     let matches=[];
-    for(let i=0;i<Math.min(COURTS.length,teams.length/2);i++){
+    const max=Math.min(COURTS.length,Math.floor(teams.length/2));
+
+    for(let i=0;i<max;i++){
+      const t1=teams[i*2];
+      const t2=teams[i*2+1];
+      if(!t1||!t2) continue;
+
       matches.push({
-        team1:teams[i*2],
-        team2:teams[i*2+1],
+        team1:t1,
+        team2:t2,
         s1:0,
         s2:0
       });
     }
 
-    setStore[setNo]={locked:false,matches};
+    setStore[setNo]={
+      locked:false,
+      matches
+    };
 
     renderResult();
   };
 });
 
-/* RESULT + ANALYSIS */
+/* ================= RESULT ================= */
 function renderResult(){
   resultEl.innerHTML="";
+
   const active=players.filter(p=>p.active);
 
   for(let i=1;i<=5;i++){
+
     const set=setStore[i];
     if(!set) continue;
 
@@ -155,7 +175,6 @@ function renderResult(){
     title.textContent=`${i}SET`;
 
     const lock=document.createElement("button");
-    lock.className="lockBtn";
     lock.textContent=set.locked?"🔒":"🔓";
     lock.onclick=()=>toggleLock(i);
 
@@ -185,15 +204,13 @@ function renderResult(){
       s1.onchange=()=>m.s1=+s1.value;
       s2.onchange=()=>m.s2=+s2.value;
 
-      const scoreWrap=document.createElement("span");
-      scoreWrap.className="scoreWrap";
-
-      scoreWrap.appendChild(s1);
-      scoreWrap.appendChild(document.createTextNode(" : "));
-      scoreWrap.appendChild(s2);
+      const score=document.createElement("span");
+      score.appendChild(s1);
+      score.appendChild(document.createTextNode(" : "));
+      score.appendChild(s2);
 
       line.appendChild(text);
-      line.appendChild(scoreWrap);
+      line.appendChild(score);
 
       wrap.appendChild(line);
     });
@@ -211,79 +228,15 @@ function renderResult(){
     wrap.appendChild(w);
     resultEl.appendChild(wrap);
   }
-
-  renderAnalysis();
 }
 
-/* ANALYSIS */
-function renderAnalysis(){
-  let box=document.getElementById("analysisBox");
-  if(!box){
-    const btn=document.createElement("button");
-    btn.id="analysisBtn";
-    btn.textContent="경기분석";
-
-    box=document.createElement("div");
-    box.id="analysisBox";
-
-    resultEl.parentNode.appendChild(btn);
-    resultEl.parentNode.appendChild(box);
-
-    btn.onclick=()=>{
-      const stats={};
-
-      players.filter(p=>p.active).forEach(p=>{
-        stats[p.name]={game:0,win:0,lose:0,draw:0};
-      });
-
-      for(let i=1;i<=5;i++){
-        const set=setStore[i];
-        if(!set) continue;
-
-        set.matches.forEach(m=>{
-          const s1=m.s1;
-          const s2=m.s2;
-
-          const t1=m.team1.map(p=>p.name);
-          const t2=m.team2.map(p=>p.name);
-
-          const all=[...t1,...t2];
-
-          if(s1===0&&s2===0) return;
-
-          all.forEach(n=>stats[n].game++);
-
-          if(s1>s2){
-            t1.forEach(n=>stats[n].win++);
-            t2.forEach(n=>stats[n].lose++);
-          }else if(s2>s1){
-            t2.forEach(n=>stats[n].win++);
-            t1.forEach(n=>stats[n].lose++);
-          }else{
-            all.forEach(n=>stats[n].draw++);
-          }
-        });
-      }
-
-      let html="";
-      Object.keys(stats).forEach(n=>{
-        const s=stats[n];
-        if(s.game>0)
-          html+=`${n} : ${s.game}게임 (${s.win}승 ${s.draw}무 ${s.lose}패)<br>`;
-      });
-
-      box.innerHTML=html;
-    };
-  }
-}
-
-/* LOCK */
+/* ================= LOCK ================= */
 function toggleLock(i){
   setStore[i].locked=!setStore[i].locked;
   renderResult();
 }
 
-/* UTIL */
+/* ================= UTIL ================= */
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -291,7 +244,7 @@ function shuffle(a){
   }
 }
 
-/* INIT */
+/* ================= INIT ================= */
 function renderAll(){
   renderPlayers();
   renderSelect();
