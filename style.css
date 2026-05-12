@@ -111,14 +111,11 @@ h2 {
 }
 
 /* ================= LOCK BUTTON ================= */
-.lockBtn {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0;
-  font-size: 16px;
+.button.lockBtn {
+  all: unset;              /* 🔥 핵심 (기본 스타일 완전 제거) */
   cursor: pointer;
-  margin-left:auto; /* 🔥 핵심: 오른쪽 끝 밀기 */
+  font-size: 16px;
+  margin-left: auto;
 }
 
 /* ================= SCORE ================= */
