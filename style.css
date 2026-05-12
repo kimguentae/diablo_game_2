@@ -6,17 +6,9 @@ body {
   font-family:sans-serif;
 }
 
-h1 {
-  text-align:center;
-  font-size:18px;
-}
+h1 { text-align:center; font-size:18px; }
+h2 { font-size:12px; color:#aaa; }
 
-h2 {
-  font-size:12px;
-  color:#aaa;
-}
-
-/* PLAYER */
 #playerList {
   display:grid;
   grid-template-columns:repeat(5,1fr);
@@ -42,7 +34,6 @@ h2 {
   color:#aaa;
 }
 
-/* FIXED PAIR */
 .pairBox {
   display:grid;
   grid-template-columns:1fr 1fr 0.4fr;
@@ -66,7 +57,6 @@ h2 {
   border:1px dashed #555;
 }
 
-/* PAIR */
 .pairItem {
   background:#ffb300;
   color:#000;
@@ -76,7 +66,6 @@ h2 {
   margin-top:5px;
 }
 
-/* SET BUTTON */
 .btnRow {
   display:grid;
   grid-template-columns:repeat(5,1fr);
@@ -92,7 +81,6 @@ h2 {
   color:#fff;
 }
 
-/* GAME RESULT */
 .result-set {
   margin-top:10px;
   padding:8px;
@@ -102,14 +90,12 @@ h2 {
   line-height:1.6;
 }
 
-/* HEADER (SET + LOCK) */
 .result-set > div:first-child {
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-/* LOCK */
 .lockBtn {
   font-size:14px;
   background:transparent;
@@ -119,7 +105,6 @@ h2 {
   margin-left:auto;
 }
 
-/* SCORE */
 .scoreWrap {
   margin-left:40px;
 }
@@ -133,7 +118,6 @@ h2 {
   text-align:center;
 }
 
-/* ANALYSIS */
 #analysisBox {
   margin-top:10px;
   background:#111;
