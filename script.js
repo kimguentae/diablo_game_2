@@ -89,7 +89,6 @@ function renderPairs(){
 /* ================= SET GENERATE ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
-
     const setNo=btn.dataset.set;
 
     if(setStore[setNo]?.locked){
@@ -103,10 +102,10 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
     let used=new Set();
     let teams=[];
 
+    // 고정 페어
     pairs.forEach(p=>{
       const a=active.find(x=>x.name===p[0]);
       const b=active.find(x=>x.name===p[1]);
-
       if(a&&b){
         teams.push([a,b]);
         used.add(a.name);
@@ -114,22 +113,23 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
+    // 나머지
     let rest=active.filter(p=>!used.has(p.name));
     shuffle(rest);
 
-    for(let i=0;i<rest.length;i+=2){
-      if(rest[i+1]) teams.push([rest[i],rest[i+1]]);
+    for(let i=0;i<rest.length-1;i+=2){
+      teams.push([rest[i],rest[i+1]]);
     }
+
+    const possibleMatches=Math.floor(teams.length/2);
+    if(possibleMatches===0) return;
 
     shuffle(teams);
 
+    const maxCourts=Math.min(3, possibleMatches);
     let matches=[];
-    const maxMatches=Math.min(
-      COURTS.length,
-      Math.floor(teams.length/2)
-    );
 
-    for(let i=0;i<maxMatches;i++){
+    for(let i=0;i<maxCourts;i++){
       matches.push({
         team1:teams[i*2],
         team2:teams[i*2+1],
@@ -160,6 +160,7 @@ function renderResult(){
     wrap.className="result-set";
 
     const header=document.createElement("div");
+
     const title=document.createElement("span");
     title.textContent=`${i}SET `;
 
@@ -195,7 +196,6 @@ function renderResult(){
 
       const scoreWrap=document.createElement("span");
       scoreWrap.className="scoreWrap";
-
       scoreWrap.appendChild(s1);
       scoreWrap.appendChild(document.createTextNode(" : "));
       scoreWrap.appendChild(s2);
