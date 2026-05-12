@@ -25,7 +25,7 @@ const resultEl = document.getElementById("result");
 
 const p1 = document.getElementById("p1");
 const p2 = document.getElementById("p2");
-const addPairBtn = document.getElementById("addPair");
+const addPair = document.getElementById("addPair");
 const pairList = document.getElementById("pairList");
 
 /* =========================
@@ -34,7 +34,7 @@ const pairList = document.getElementById("pairList");
 function renderPlayers(){
   listEl.innerHTML = "";
 
-  let sorted = [
+  const sorted = [
     ...players.filter(p=>p.active),
     ...players.filter(p=>!p.active)
   ];
@@ -56,7 +56,7 @@ function renderPlayers(){
 }
 
 /* =========================
-   FIXED PAIR SELECT
+   SELECT
 ========================= */
 function renderSelect(){
   const active = players.filter(p=>p.active);
@@ -76,7 +76,7 @@ function renderSelect(){
 /* =========================
    PAIR 추가
 ========================= */
-addPairBtn.onclick = ()=>{
+addPair.onclick = ()=>{
   const a = p1.value;
   const b = p2.value;
 
@@ -159,7 +159,7 @@ function renderResult(){
 }
 
 /* =========================
-   SHUFFLE
+   shuffle
 ========================= */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
