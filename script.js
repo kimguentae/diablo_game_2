@@ -16,7 +16,7 @@ const players = names.map(n => ({
 let pairs = [];
 const setStore = {1:null,2:null,3:null,4:null,5:null};
 
-/* ========================= */
+/* ========================= ELEMENT ========================= */
 const listEl = document.getElementById("playerList");
 const countEl = document.getElementById("count");
 const resultEl = document.getElementById("result");
@@ -175,7 +175,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
   };
 });
 
-/* ========================= RESULT (🔥 핵심 수정) ========================= */
+/* ========================= RESULT (🔥 핵심: SET별 대기) ========================= */
 function renderResult(){
 
   resultEl.innerHTML = "";
@@ -184,11 +184,10 @@ function renderResult(){
     const data = setStore[i];
     if(!data) continue;
 
-    let played = new Set();
-
     const div = document.createElement("div");
     div.className = "result-set";
 
+    let played = new Set();
     let html = `(${i}SET)<br>`;
 
     data.forEach((t,idx)=>{
@@ -203,14 +202,11 @@ function renderResult(){
       html += `${court}코트: ${t[0].name} ${t[1].name} vs ${t[2].name} ${t[3].name}<br>`;
     });
 
-    // 🔥 세트별 대기자
     const waiting = players
       .filter(p=>p.active)
       .filter(p=>!played.has(p.name));
 
-    if(waiting.length){
-      html += `<br>대기 : ${waiting.map(p=>p.name).join(" ")}`;
-    }
+    html += `<br>대기 : ${waiting.map(p=>p.name).join(" ")}`;
 
     div.innerHTML = html;
     resultEl.appendChild(div);
