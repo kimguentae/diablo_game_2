@@ -16,9 +16,7 @@ h2 {
   color: #aaa;
 }
 
-/* =========================
-   PLAYER
-========================= */
+/* PLAYER */
 #playerList {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -35,10 +33,6 @@ h2 {
   user-select: none;
 }
 
-.player:active {
-  transform: scale(0.92);
-}
-
 .player.active {
   background: #00c853;
   color: #000;
@@ -49,9 +43,7 @@ h2 {
   color: #aaa;
 }
 
-/* =========================
-   FIXED PAIR
-========================= */
+/* FIXED PAIR */
 .pairBox {
   display: grid;
   grid-template-columns: 1fr 1fr 0.4fr;
@@ -59,48 +51,29 @@ h2 {
   margin-bottom: 10px;
 }
 
-/* select */
 .pairBox select {
   background: #1c1c1c;
   color: #fff;
   border: 1px solid #222;
   border-radius: 6px;
-
   font-size: 9px;
-
   height: 34px;
-  line-height: 34px;
-
-  padding: 0;
   text-align: center;
-  text-align-last: center;
-
   appearance: none;
   box-sizing: border-box;
 }
 
-/* + 버튼 (🔥 핵심 수정 완료) */
 #addPair {
   height: 34px;
-  box-sizing: border-box;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  font-size: 12px;
-  line-height: 1;
-
-  padding: 0;
-
   border: 1px dashed #555;
   border-radius: 6px;
   background: #1c1c1c;
 }
 
-/* =========================
-   PAIR LIST
-========================= */
+/* PAIR LIST */
 .pairItem {
   background: #ffb300;
   color: #000;
@@ -110,9 +83,7 @@ h2 {
   margin-top: 5px;
 }
 
-/* =========================
-   GAME
-========================= */
+/* GAME */
 .btnRow {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -128,9 +99,7 @@ h2 {
   color: white;
 }
 
-/* =========================
-   RESULT
-========================= */
+/* RESULT */
 .result-set {
   margin-top: 8px;
   padding: 8px;
