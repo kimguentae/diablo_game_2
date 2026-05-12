@@ -112,10 +112,13 @@ h2 {
 
 /* ================= LOCK BUTTON ================= */
 .lockBtn {
-  all: unset;              /* 🔥 핵심 (기본 스타일 완전 제거) */
-  cursor: pointer;
-  font-size: 16px;
-  margin-left: auto;
+  font-size:14px;
+  background:transparent;
+  border:none;
+  color:none;
+  cursor:pointer;
+  padding:0;
+  margin-left:auto; /* 🔥 핵심: 오른쪽 끝 밀기 */
 }
 
 /* ================= SCORE ================= */
