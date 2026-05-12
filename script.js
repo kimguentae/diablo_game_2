@@ -70,55 +70,21 @@ function renderPlayers(){
 }
 
 /* =========================
-   FIXED PAIR SAFE SELECT
+   SELECT
 ========================= */
-function getUsed(){
-  const set = new Set();
-  pairs.forEach(p=>{
-    set.add(p[0]);
-    set.add(p[1]);
-  });
-  return set;
-}
-
 function renderSelect(){
-
-  const used = getUsed();
   const active = players.filter(p=>p.active);
 
-  const selected1 = p1.value;
-  const selected2 = p2.value;
+  p1.innerHTML = "";
+  p2.innerHTML = "";
 
-  // 최초 1회만 생성
-  if(p1.options.length === 0){
-    p1.innerHTML = `<option value="">PLAYER1</option>`;
-    p2.innerHTML = `<option value="">PLAYER2</option>`;
+  p1.appendChild(new Option("PLAYER1",""));
+  p2.appendChild(new Option("PLAYER2",""));
 
-    active.forEach(p=>{
-      p1.appendChild(new Option(p.name,p.name));
-      p2.appendChild(new Option(p.name,p.name));
-    });
-  }
-
-  // disabled 처리 (핵심)
-  Array.from(p1.options).forEach(opt=>{
-    if(!opt.value) return;
-
-    opt.disabled =
-      used.has(opt.value) ||
-      opt.value === selected2;
+  active.forEach(p=>{
+    p1.appendChild(new Option(p.name,p.name));
+    p2.appendChild(new Option(p.name,p.name));
   });
-
-  Array.from(p2.options).forEach(opt=>{
-    if(!opt.value) return;
-
-    opt.disabled =
-      used.has(opt.value) ||
-      opt.value === selected1;
-  });
-
-  p1.value = selected1;
-  p2.value = selected2;
 }
 
 /* =========================
@@ -158,7 +124,7 @@ function renderPairs(){
 }
 
 /* =========================
-   GAME
+   🔥 GAME (핵심 수정)
 ========================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick = ()=>{
@@ -171,14 +137,33 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       return;
     }
 
-    let pool = [...active];
-    shuffle(pool);
+    let used = new Set();
+    let temp = [];
 
+    // 🔥 1. FIXED PAIR 먼저 한 팀으로 넣기
+    pairs.forEach(p=>{
+      const a = active.find(x=>x.name === p[0]);
+      const b = active.find(x=>x.name === p[1]);
+
+      if(a && b){
+        temp.push(a, b);
+        used.add(a.name);
+        used.add(b.name);
+      }
+    });
+
+    // 🔥 2. 나머지 인원 추가
+    let rest = active.filter(p => !used.has(p.name));
+    shuffle(rest);
+    temp.push(...rest);
+
+    // 🔥 3. 4명씩 경기 생성
     let matches = [];
 
-    for(let i=0;i<COURTS.length;i++){
-      if(pool.length < 4) break;
-      matches.push(pool.splice(0,4));
+    for(let i=0;i<temp.length;i+=4){
+      if(temp.slice(i,i+4).length === 4){
+        matches.push(temp.slice(i,i+4));
+      }
     }
 
     setStore[setNo] = matches;
@@ -209,9 +194,7 @@ function renderResult(){
   }
 }
 
-/* =========================
-   shuffle
-========================= */
+/* shuffle */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
     let j=Math.floor(Math.random()*(i+1));
@@ -219,9 +202,7 @@ function shuffle(arr){
   }
 }
 
-/* =========================
-   INIT
-========================= */
+/* INIT */
 function renderAll(){
   renderPlayers();
   renderSelect();
