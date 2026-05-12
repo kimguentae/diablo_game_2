@@ -111,7 +111,7 @@ h2 {
 }
 
 /* ================= LOCK BUTTON ================= */
-.button.lockBtn {
+.lockBtn {
   all: unset;              /* 🔥 핵심 (기본 스타일 완전 제거) */
   cursor: pointer;
   font-size: 16px;
