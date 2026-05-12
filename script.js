@@ -215,82 +215,66 @@ function renderResult(){
   renderAnalysis();
 }
 
-/* 🔥 ANALYSIS (정렬 핵심) */
+/* ANALYSIS */
 function renderAnalysis(){
-  let stats={};
-
-  players.filter(p=>p.active).forEach(p=>{
-    stats[p.name]={game:0,win:0,lose:0,draw:0};
-  });
-
-  for(let i=1;i<=5;i++){
-    const set=setStore[i];
-    if(!set) continue;
-
-    set.matches.forEach(m=>{
-      const s1=m.s1;
-      const s2=m.s2;
-
-      const t1=m.team1.map(p=>p.name);
-      const t2=m.team2.map(p=>p.name);
-
-      const all=[...t1,...t2];
-
-      if(s1===0&&s2===0) return;
-
-      all.forEach(n=>stats[n].game++);
-
-      if(s1>s2){
-        t1.forEach(n=>stats[n].win++);
-        t2.forEach(n=>stats[n].lose++);
-      }else if(s2>s1){
-        t2.forEach(n=>stats[n].win++);
-        t1.forEach(n=>stats[n].lose++);
-      }else{
-        all.forEach(n=>stats[n].draw++);
-      }
-    });
-  }
-
-  let arr=Object.keys(stats).map(name=>{
-    const s=stats[name];
-    return {
-      name,
-      game:s.game,
-      win:s.win,
-      draw:s.draw,
-      lose:s.lose
-    };
-  });
-
-  // 🔥 핵심 정렬
-  arr.sort((a,b)=>{
-    if(b.game!==a.game) return b.game-a.game;
-    return b.win-a.win;
-  });
-
-  let html="";
-  arr.forEach(s=>{
-    if(s.game>0)
-      html+=`${s.name} : ${s.game}게임 (${s.win}승 ${s.draw}무 ${s.lose}패)<br>`;
-  });
-
   let box=document.getElementById("analysisBox");
   if(!box){
-    box=document.createElement("div");
-    box.id="analysisBox";
-
     const btn=document.createElement("button");
     btn.id="analysisBtn";
     btn.textContent="경기분석";
 
-    btn.onclick=()=>{ box.style.display="block"; };
+    box=document.createElement("div");
+    box.id="analysisBox";
 
     resultEl.parentNode.appendChild(btn);
     resultEl.parentNode.appendChild(box);
-  }
 
-  box.innerHTML=html;
+    btn.onclick=()=>{
+      const stats={};
+
+      players.filter(p=>p.active).forEach(p=>{
+        stats[p.name]={game:0,win:0,lose:0,draw:0};
+      });
+
+      for(let i=1;i<=5;i++){
+        const set=setStore[i];
+        if(!set) continue;
+
+        set.matches.forEach(m=>{
+          const s1=m.s1;
+          const s2=m.s2;
+
+          const t1=m.team1.map(p=>p.name);
+          const t2=m.team2.map(p=>p.name);
+
+          const all=[...t1,...t2];
+
+          if(s1===0&&s2===0) return;
+
+          all.forEach(n=>stats[n].game++);
+
+          if(s1>s2){
+            t1.forEach(n=>stats[n].win++);
+            t2.forEach(n=>stats[n].lose++);
+          }else if(s2>s1){
+            t2.forEach(n=>stats[n].win++);
+            t1.forEach(n=>stats[n].lose++);
+          }else{
+            all.forEach(n=>stats[n].draw++);
+          }
+        });
+      }
+
+      let html="";
+      Object.keys(stats).forEach(n=>{
+        const s=stats[n];
+        if(s.game>0)
+          html+=`${n} : ${s.game}게임 (${s.win}승 ${s.draw}무 ${s.lose}패)<br>`;
+      });
+
+      box.innerHTML=html;
+    };
+  }
 }
 
 /* LOCK */
