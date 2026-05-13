@@ -17,8 +17,8 @@ const players=names.map(n=>({
 let pairs=[];
 const setStore={1:null,2:null,3:null,4:null,5:null};
 
-/* 🔥 파트너 기록 */
-const partnerHistory={};
+/* 🔥 하루 1회 파트너 제한 */
+const partnerUsedToday = {};
 
 const listEl=document.getElementById("playerList");
 const countEl=document.getElementById("count");
@@ -39,70 +39,6 @@ function shuffle(a){
     const j=Math.floor(Math.random()*(i+1));
     [a[i],a[j]]=[a[j],a[i]];
   }
-}
-
-/* ================= PLAYER ================= */
-function renderPlayers(){
-  listEl.innerHTML="";
-
-  [...players.filter(p=>p.active),...players.filter(p=>!p.active)]
-  .forEach(p=>{
-    const d=document.createElement("div");
-    d.className="player"+(p.active?" active":"");
-    d.textContent=p.name;
-    d.onclick=()=>{p.active=!p.active;renderAll();};
-    listEl.appendChild(d);
-  });
-
-  const g=document.createElement("div");
-  g.className="player guest";
-  g.textContent="+";
-  g.onclick=()=>{
-    const n=prompt("GUEST NAME");
-    if(n) players.push({name:n,active:true,playCount:0});
-    renderAll();
-  };
-  listEl.appendChild(g);
-
-  countEl.textContent=players.filter(p=>p.active).length;
-}
-
-/* ================= SELECT ================= */
-function renderSelect(){
-  const active=players.filter(p=>p.active);
-
-  p1.innerHTML='<option>PLAYER1</option>';
-  p2.innerHTML='<option>PLAYER2</option>';
-
-  active.forEach(p=>{
-    p1.appendChild(new Option(p.name,p.name));
-    p2.appendChild(new Option(p.name,p.name));
-  });
-}
-
-/* ================= FIXED PAIR ================= */
-addPair.onclick=()=>{
-  const a=p1.value,b=p2.value;
-  if(!a||!b||a===b) return;
-  if(pairs.some(x=>x.includes(a)||x.includes(b))) return;
-
-  pairs.push([a,b]);
-  p1.value=p2.value="";
-  renderAll();
-};
-
-function renderPairs(){
-  pairList.innerHTML="";
-  pairs.forEach((p,i)=>{
-    const d=document.createElement("div");
-    d.className="pairItem";
-    d.textContent=`PAIR ${i+1}: ${p[0]} ${p[1]}`;
-    d.onclick=()=>{
-      pairs=pairs.filter(x=>x!==p);
-      renderAll();
-    };
-    pairList.appendChild(d);
-  });
 }
 
 /* ================= SET GENERATE ================= */
@@ -129,40 +65,32 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     let rest=active.filter(p=>!used.has(p.name));
 
-    /* ================= 핵심: 공정성 ================= */
+    /* 🔥 공정성 */
     rest.sort((a,b)=>a.playCount - b.playCount);
 
-    /* ================= 핵심: 후보 생성 ================= */
-    let candidates=[];
+    shuffle(rest);
+
+    let usedPlayers=new Set();
 
     for(let i=0;i<rest.length;i++){
       for(let j=i+1;j<rest.length;j++){
+
         const a=rest[i];
         const b=rest[j];
 
         const key=pairKey(a,b);
-        const hist=partnerHistory[key] || 0;
 
-        candidates.push({
-          a,b,
-          score: a.playCount + b.playCount + hist*10
-        });
+        /* 🔥 핵심: 하루 1회 제한 */
+        if(partnerUsedToday[key]) continue;
+
+        if(usedPlayers.has(a.name) || usedPlayers.has(b.name)) continue;
+
+        teams.push([a,b]);
+        usedPlayers.add(a.name);
+        usedPlayers.add(b.name);
+
+        partnerUsedToday[key]=true;
       }
-    }
-
-    candidates.sort((x,y)=>x.score - y.score);
-
-    let usedPlayers=new Set();
-
-    for(let c of candidates){
-      if(usedPlayers.has(c.a.name) || usedPlayers.has(c.b.name)) continue;
-
-      teams.push([c.a,c.b]);
-      usedPlayers.add(c.a.name);
-      usedPlayers.add(c.b.name);
-
-      const key=pairKey(c.a,c.b);
-      partnerHistory[key]=(partnerHistory[key]||0)+1;
     }
 
     const maxCourts=Math.min(3,Math.floor(teams.length/2));
