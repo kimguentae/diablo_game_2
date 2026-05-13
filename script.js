@@ -17,8 +17,8 @@ const players=names.map(n=>({
 let pairs=[];
 const setStore={1:null,2:null,3:null,4:null,5:null};
 
-/* 🔥 조합 기록 (같이 뛴 적 있는지 체크) */
-const partnerHistory = new Map();
+/* 🔥 파트너 기록 */
+const partnerHistory={};
 
 const listEl=document.getElementById("playerList");
 const countEl=document.getElementById("count");
@@ -28,6 +28,18 @@ const p1=document.getElementById("p1");
 const p2=document.getElementById("p2");
 const addPair=document.getElementById("addPair");
 const pairList=document.getElementById("pairList");
+
+/* ================= UTIL ================= */
+function pairKey(a,b){
+  return [a.name,b.name].sort().join("-");
+}
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+}
 
 /* ================= PLAYER ================= */
 function renderPlayers(){
@@ -117,34 +129,43 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     let rest=active.filter(p=>!used.has(p.name));
 
-    /* ================= 🔥 핵심 1: 공정성 ================= */
-    const avg = active.reduce((s,p)=>s+p.playCount,0)/active.length;
+    /* ================= 핵심: 공정성 ================= */
+    rest.sort((a,b)=>a.playCount - b.playCount);
 
-    rest.sort((a,b)=>{
-      return a.playCount - b.playCount;
-    });
+    /* ================= 핵심: 후보 생성 ================= */
+    let candidates=[];
 
-    /* ================= 🔥 핵심 2: 강한 섞기 ================= */
-    shuffle(rest);
+    for(let i=0;i<rest.length;i++){
+      for(let j=i+1;j<rest.length;j++){
+        const a=rest[i];
+        const b=rest[j];
 
-    /* ================= 🔥 핵심 3: 조합 제한 ================= */
-    const usedPairs = new Set();
+        const key=pairKey(a,b);
+        const hist=partnerHistory[key] || 0;
 
-    for(let i=0;i+1<rest.length;i+=2){
-
-      const a=rest[i];
-      const b=rest[i+1];
-
-      const key=[a.name,b.name].sort().join("-");
-
-      if(usedPairs.has(key)) continue;
-
-      usedPairs.add(key);
-      teams.push([a,b]);
+        candidates.push({
+          a,b,
+          score: a.playCount + b.playCount + hist*10
+        });
+      }
     }
 
-    const possibleMatches=Math.floor(teams.length/2);
-    const maxCourts=Math.min(3,possibleMatches);
+    candidates.sort((x,y)=>x.score - y.score);
+
+    let usedPlayers=new Set();
+
+    for(let c of candidates){
+      if(usedPlayers.has(c.a.name) || usedPlayers.has(c.b.name)) continue;
+
+      teams.push([c.a,c.b]);
+      usedPlayers.add(c.a.name);
+      usedPlayers.add(c.b.name);
+
+      const key=pairKey(c.a,c.b);
+      partnerHistory[key]=(partnerHistory[key]||0)+1;
+    }
+
+    const maxCourts=Math.min(3,Math.floor(teams.length/2));
 
     let matches=[];
 
@@ -159,7 +180,7 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     setStore[setNo]={locked:false,matches};
 
-    /* ================= 🔥 출전 기록 ================= */
+    /* ================= 출전 기록 ================= */
     const played=new Set();
 
     matches.forEach(m=>{
@@ -249,14 +270,6 @@ function renderResult(){
 function toggleLock(i){
   setStore[i].locked=!setStore[i].locked;
   renderResult();
-}
-
-/* ================= UTIL ================= */
-function shuffle(a){
-  for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
 }
 
 /* ================= INIT ================= */
