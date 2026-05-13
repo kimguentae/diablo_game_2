@@ -13,9 +13,7 @@ const players=names.map(n=>({name:n,active:false}));
 let pairs=[];
 const setStore={1:null,2:null,3:null,4:null,5:null};
 
-/* 🔥 대기자 우선권 관리
-   { 이름: 남은 강제 세트 수 }
-*/
+/* 🔥 대기자 강제 출전 관리 */
 const waitPriority = {};
 
 const listEl=document.getElementById("playerList");
@@ -118,63 +116,64 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
-    // 🔥 나머지 (대기자 우선 반영)
+    /* 🔥 나머지 선수 */
     let rest=active.filter(p=>!used.has(p.name));
 
-    const priorityPlayers = rest.filter(p => waitPriority[p.name] > 0);
-    const normalPlayers   = rest.filter(p => !waitPriority[p.name]);
+    const priorityPlayers = rest.filter(p=>waitPriority[p.name]>0);
+    const normalPlayers   = rest.filter(p=>!waitPriority[p.name]);
 
     shuffle(priorityPlayers);
     shuffle(normalPlayers);
 
-    rest = [...priorityPlayers, ...normalPlayers];
+    rest=[...priorityPlayers,...normalPlayers];
 
+    /* 🔥 팀 생성 (대기자 포함 팀은 앞쪽으로) */
     for(let i=0;i+1<rest.length;i+=2){
-      teams.push([rest[i],rest[i+1]]);
+      const a=rest[i];
+      const b=rest[i+1];
+
+      if(waitPriority[a.name] || waitPriority[b.name]){
+        teams.unshift([a,b]); // 🔥 절대 잘리지 않게
+      }else{
+        teams.push([a,b]);
+      }
     }
 
-    const possibleMatches = Math.floor(teams.length / 2);
-    if(possibleMatches < 1) return;
+    const possibleMatches=Math.floor(teams.length/2);
+    if(possibleMatches<1) return;
 
-    shuffle(teams);
-
-    const maxCourts = Math.min(3, possibleMatches);
+    const maxCourts=Math.min(3,possibleMatches);
     let matches=[];
 
     for(let i=0;i<maxCourts;i++){
       matches.push({
-        team1: teams[i*2],
-        team2: teams[i*2+1],
+        team1:teams[i*2],
+        team2:teams[i*2+1],
         s1:0,
         s2:0
       });
     }
 
-    setStore[setNo]={
-      locked:false,
-      matches
-    };
+    setStore[setNo]={locked:false,matches};
 
     /* 🔥 플레이 / 대기자 판별 */
-    const playedNames = new Set();
+    const playedNames=new Set();
     matches.forEach(m=>{
-      [...m.team1, ...m.team2].forEach(p=>playedNames.add(p.name));
+      [...m.team1,...m.team2].forEach(p=>playedNames.add(p.name));
     });
 
-    // 🔥 쉬었던 사람 → 다음 2세트 강제
+    // 쉬었던 사람 → 다음 2세트 강제
     active.forEach(p=>{
       if(!playedNames.has(p.name)){
-        waitPriority[p.name] = 2;
+        waitPriority[p.name]=2;
       }
     });
 
-    // 🔥 게임 들어간 사람 → 우선권 차감
+    // 들어간 사람 → 우선권 감소
     playedNames.forEach(name=>{
       if(waitPriority[name]){
         waitPriority[name]--;
-        if(waitPriority[name] <= 0){
-          delete waitPriority[name];
-        }
+        if(waitPriority[name]<=0) delete waitPriority[name];
       }
     });
 
@@ -260,7 +259,7 @@ function toggleLock(i){
 /* ================= UTIL ================= */
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
-    let j=Math.floor(Math.random()*(i+1));
+    const j=Math.floor(Math.random()*(i+1));
     [a[i],a[j]]=[a[j],a[i]];
   }
 }
