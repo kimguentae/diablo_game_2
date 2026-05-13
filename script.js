@@ -13,8 +13,8 @@ const players=names.map(n=>({name:n,active:false}));
 let pairs=[];
 const setStore={1:null,2:null,3:null,4:null,5:null};
 
-/* 🔥 대기자 강제 출전 관리 */
-const waitPriority = {};
+/* 🔥 핵심 추가: 세트별 대기자 저장 */
+const waitStore={};
 
 const listEl=document.getElementById("playerList");
 const countEl=document.getElementById("count");
@@ -92,20 +92,15 @@ function renderPairs(){
 /* ================= SET GENERATE ================= */
 document.querySelectorAll(".genBtn").forEach(btn=>{
   btn.onclick=()=>{
-    const setNo=btn.dataset.set;
-
-    if(setStore[setNo]?.locked){
-      alert("LOCK 상태입니다");
-      return;
-    }
+    const setNo=Number(btn.dataset.set);
 
     const active=players.filter(p=>p.active);
-    if(active.length < 4) return;
+    if(active.length<4) return;
 
     let used=new Set();
     let teams=[];
 
-    // 고정 페어
+    /* 고정 페어 */
     pairs.forEach(p=>{
       const a=active.find(x=>x.name===p[0]);
       const b=active.find(x=>x.name===p[1]);
@@ -116,27 +111,19 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
-    /* 🔥 나머지 선수 */
     let rest=active.filter(p=>!used.has(p.name));
 
-    const priorityPlayers = rest.filter(p=>waitPriority[p.name]>0);
-    const normalPlayers   = rest.filter(p=>!waitPriority[p.name]);
+    /* ================= 핵심: 이전 세트 대기자 가져오기 ================= */
+    const prevWaiters = waitStore[setNo-1] || [];
 
-    shuffle(priorityPlayers);
-    shuffle(normalPlayers);
+    const priorityPlayers = rest.filter(p=>prevWaiters.includes(p.name));
+    const normalPlayers = rest.filter(p=>!prevWaiters.includes(p.name));
 
-    rest=[...priorityPlayers,...normalPlayers];
+    rest = [...priorityPlayers, ...normalPlayers];
 
-    /* 🔥 팀 생성 (대기자 포함 팀은 앞쪽으로) */
+    /* 팀 생성 */
     for(let i=0;i+1<rest.length;i+=2){
-      const a=rest[i];
-      const b=rest[i+1];
-
-      if(waitPriority[a.name] || waitPriority[b.name]){
-        teams.unshift([a,b]); // 🔥 절대 잘리지 않게
-      }else{
-        teams.push([a,b]);
-      }
+      teams.push([rest[i],rest[i+1]]);
     }
 
     const possibleMatches=Math.floor(teams.length/2);
@@ -156,26 +143,17 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     setStore[setNo]={locked:false,matches};
 
-    /* 🔥 플레이 / 대기자 판별 */
+    /* ================= 대기자 계산 ================= */
+
     const playedNames=new Set();
     matches.forEach(m=>{
       [...m.team1,...m.team2].forEach(p=>playedNames.add(p.name));
     });
 
-    // 쉬었던 사람 → 다음 2세트 강제
-    active.forEach(p=>{
-      if(!playedNames.has(p.name)){
-        waitPriority[p.name]=2;
-      }
-    });
+    const wait = active.filter(p=>!playedNames.has(p.name));
 
-    // 들어간 사람 → 우선권 감소
-    playedNames.forEach(name=>{
-      if(waitPriority[name]){
-        waitPriority[name]--;
-        if(waitPriority[name]<=0) delete waitPriority[name];
-      }
-    });
+    /* 🔥 핵심 저장 */
+    waitStore[setNo]=wait.map(p=>p.name);
 
     renderResult();
   };
