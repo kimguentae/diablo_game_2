@@ -13,6 +13,11 @@ const players=names.map(n=>({name:n,active:false}));
 let pairs=[];
 const setStore={1:null,2:null,3:null,4:null,5:null};
 
+/* 🔥 대기자 우선권 관리
+   { 이름: 남은 강제 세트 수 }
+*/
+const waitPriority = {};
+
 const listEl=document.getElementById("playerList");
 const countEl=document.getElementById("count");
 const resultEl=document.getElementById("result");
@@ -113,15 +118,21 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       }
     });
 
-    // 나머지
+    // 🔥 나머지 (대기자 우선 반영)
     let rest=active.filter(p=>!used.has(p.name));
-    shuffle(rest);
+
+    const priorityPlayers = rest.filter(p => waitPriority[p.name] > 0);
+    const normalPlayers   = rest.filter(p => !waitPriority[p.name]);
+
+    shuffle(priorityPlayers);
+    shuffle(normalPlayers);
+
+    rest = [...priorityPlayers, ...normalPlayers];
 
     for(let i=0;i+1<rest.length;i+=2){
       teams.push([rest[i],rest[i+1]]);
     }
 
-    // 👉 여기서 핵심
     const possibleMatches = Math.floor(teams.length / 2);
     if(possibleMatches < 1) return;
 
@@ -143,6 +154,29 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
       locked:false,
       matches
     };
+
+    /* 🔥 플레이 / 대기자 판별 */
+    const playedNames = new Set();
+    matches.forEach(m=>{
+      [...m.team1, ...m.team2].forEach(p=>playedNames.add(p.name));
+    });
+
+    // 🔥 쉬었던 사람 → 다음 2세트 강제
+    active.forEach(p=>{
+      if(!playedNames.has(p.name)){
+        waitPriority[p.name] = 2;
+      }
+    });
+
+    // 🔥 게임 들어간 사람 → 우선권 차감
+    playedNames.forEach(name=>{
+      if(waitPriority[name]){
+        waitPriority[name]--;
+        if(waitPriority[name] <= 0){
+          delete waitPriority[name];
+        }
+      }
+    });
 
     renderResult();
   };
