@@ -11,12 +11,14 @@ const names=[
 const players=names.map(n=>({
   name:n,
   active:false,
-  playCount:0,     // 🔥 핵심: 출전 횟수
-  restHistory:0    // 🔥 최근 쉰 횟수
+  playCount:0
 }));
 
 let pairs=[];
 const setStore={1:null,2:null,3:null,4:null,5:null};
+
+/* 🔥 조합 기록 (같이 뛴 적 있는지 체크) */
+const partnerHistory = new Map();
 
 const listEl=document.getElementById("playerList");
 const countEl=document.getElementById("count");
@@ -45,7 +47,7 @@ function renderPlayers(){
   g.textContent="+";
   g.onclick=()=>{
     const n=prompt("GUEST NAME");
-    if(n) players.push({name:n,active:true,playCount:0,restHistory:0});
+    if(n) players.push({name:n,active:true,playCount:0});
     renderAll();
   };
   listEl.appendChild(g);
@@ -115,28 +117,35 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     let rest=active.filter(p=>!used.has(p.name));
 
-    /* ================= 🔥 핵심: 균형 + 연속 휴식 보정 ================= */
-
-    // 평균 출전 횟수
+    /* ================= 🔥 핵심 1: 공정성 ================= */
     const avg = active.reduce((s,p)=>s+p.playCount,0)/active.length;
 
-    // priority: 덜 뛴 사람 + 최근 쉰 사람
-    const priorityPlayers = rest
-      .filter(p=>p.playCount <= avg || p.restHistory > 0);
+    rest.sort((a,b)=>{
+      return a.playCount - b.playCount;
+    });
 
-    const normalPlayers = rest.filter(p=>!priorityPlayers.includes(p));
+    /* ================= 🔥 핵심 2: 강한 섞기 ================= */
+    shuffle(rest);
 
-    rest=[...priorityPlayers,...normalPlayers];
+    /* ================= 🔥 핵심 3: 조합 제한 ================= */
+    const usedPairs = new Set();
 
-    /* 팀 생성 */
     for(let i=0;i+1<rest.length;i+=2){
-      teams.push([rest[i],rest[i+1]]);
+
+      const a=rest[i];
+      const b=rest[i+1];
+
+      const key=[a.name,b.name].sort().join("-");
+
+      if(usedPairs.has(key)) continue;
+
+      usedPairs.add(key);
+      teams.push([a,b]);
     }
 
     const possibleMatches=Math.floor(teams.length/2);
-    if(possibleMatches<1) return;
-
     const maxCourts=Math.min(3,possibleMatches);
+
     let matches=[];
 
     for(let i=0;i<maxCourts;i++){
@@ -150,19 +159,16 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     setStore[setNo]={locked:false,matches};
 
-    /* ================= 🔥 출전/휴식 계산 ================= */
+    /* ================= 🔥 출전 기록 ================= */
+    const played=new Set();
 
-    const playedNames=new Set();
     matches.forEach(m=>{
-      [...m.team1,...m.team2].forEach(p=>playedNames.add(p.name));
+      [...m.team1,...m.team2].forEach(p=>played.add(p.name));
     });
 
     active.forEach(p=>{
-      if(playedNames.has(p.name)){
+      if(played.has(p.name)){
         p.playCount++;
-        p.restHistory = 0;
-      }else{
-        p.restHistory++;
       }
     });
 
