@@ -8,13 +8,15 @@ const names=[
   "이명진","전유준","성제현","장이현"
 ];
 
-const players=names.map(n=>({name:n,active:false}));
+const players=names.map(n=>({
+  name:n,
+  active:false,
+  playCount:0,     // 🔥 핵심: 출전 횟수
+  restHistory:0    // 🔥 최근 쉰 횟수
+}));
 
 let pairs=[];
 const setStore={1:null,2:null,3:null,4:null,5:null};
-
-/* 🔥 핵심 추가: 세트별 대기자 저장 */
-const waitStore={};
 
 const listEl=document.getElementById("playerList");
 const countEl=document.getElementById("count");
@@ -43,7 +45,7 @@ function renderPlayers(){
   g.textContent="+";
   g.onclick=()=>{
     const n=prompt("GUEST NAME");
-    if(n) players.push({name:n,active:true});
+    if(n) players.push({name:n,active:true,playCount:0,restHistory:0});
     renderAll();
   };
   listEl.appendChild(g);
@@ -113,13 +115,18 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     let rest=active.filter(p=>!used.has(p.name));
 
-    /* ================= 핵심: 이전 세트 대기자 가져오기 ================= */
-    const prevWaiters = waitStore[setNo-1] || [];
+    /* ================= 🔥 핵심: 균형 + 연속 휴식 보정 ================= */
 
-    const priorityPlayers = rest.filter(p=>prevWaiters.includes(p.name));
-    const normalPlayers = rest.filter(p=>!prevWaiters.includes(p.name));
+    // 평균 출전 횟수
+    const avg = active.reduce((s,p)=>s+p.playCount,0)/active.length;
 
-    rest = [...priorityPlayers, ...normalPlayers];
+    // priority: 덜 뛴 사람 + 최근 쉰 사람
+    const priorityPlayers = rest
+      .filter(p=>p.playCount <= avg || p.restHistory > 0);
+
+    const normalPlayers = rest.filter(p=>!priorityPlayers.includes(p));
+
+    rest=[...priorityPlayers,...normalPlayers];
 
     /* 팀 생성 */
     for(let i=0;i+1<rest.length;i+=2){
@@ -143,17 +150,21 @@ document.querySelectorAll(".genBtn").forEach(btn=>{
 
     setStore[setNo]={locked:false,matches};
 
-    /* ================= 대기자 계산 ================= */
+    /* ================= 🔥 출전/휴식 계산 ================= */
 
     const playedNames=new Set();
     matches.forEach(m=>{
       [...m.team1,...m.team2].forEach(p=>playedNames.add(p.name));
     });
 
-    const wait = active.filter(p=>!playedNames.has(p.name));
-
-    /* 🔥 핵심 저장 */
-    waitStore[setNo]=wait.map(p=>p.name);
+    active.forEach(p=>{
+      if(playedNames.has(p.name)){
+        p.playCount++;
+        p.restHistory = 0;
+      }else{
+        p.restHistory++;
+      }
+    });
 
     renderResult();
   };
